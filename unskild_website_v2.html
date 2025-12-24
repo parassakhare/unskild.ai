@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unskild AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #030708;
+            --bg-secondary: #050a0b;
+            --text-primary: #f0f5f5;
+            --text-secondary: rgba(240, 245, 245, 0.4);
+            --accent: #00f5ff;
+            --accent-dim: rgba(0, 245, 255, 0.25);
+            --accent-glow: rgba(0, 245, 255, 0.12);
+            --accent-subtle: rgba(0, 245, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10001;
+        }
+
+        .cursor.hover {
+            transform: scale(2.5);
+            background: var(--accent-dim);
+        }
+
+        /* Noise Overlay */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* Loading Screen */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.5em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .loader-bar {
+            width: 120px;
+            height: 1px;
+            background: var(--text-secondary);
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loader-bar::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: var(--accent);
+            box-shadow: 0 0 20px var(--accent);
+            animation: load 2.5s ease forwards;
+        }
+
+        @keyframes load {
+            to { width: 100%; }
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 30% 70%, var(--accent-glow) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 30%, rgba(0, 100, 120, 0.08) 0%, transparent 50%);
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0;
+            box-shadow: 0 0 6px var(--accent);
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                opacity: 0;
+                transform: translateY(100vh) scale(0);
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100vh) scale(1);
+            }
+        }
+
+        /* Logo & Title */
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            opacity: 0;
+            animation: fadeInUp 1.5s ease 2.8s forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-container {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .logo-svg {
+            width: clamp(200px, 40vw, 350px);
+            height: auto;
+            filter: drop-shadow(0 0 30px var(--accent-dim)) drop-shadow(0 0 60px var(--accent-subtle));
+            animation: logo-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes logo-glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px var(--accent-dim)) drop-shadow(0 0 40px var(--accent-subtle));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px var(--accent-dim)) drop-shadow(0 0 80px var(--accent-subtle));
+            }
+        }
+
+        .tagline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.6em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 2.5rem;
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 3.5s forwards;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--accent), transparent);
+            animation: scroll-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes scroll-pulse {
+            0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+            50% { opacity: 1; transform: scaleY(1); }
+        }
+
+        /* Sections */
+        section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 5rem 2rem;
+        }
+
+        /* Philosophy Section */
+        .philosophy {
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+
+        .philosophy-content {
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .kanji {
+            font-size: 8rem;
+            opacity: 0.06;
+            position: absolute;
+            font-weight: 300;
+            color: var(--accent);
+            user-select: none;
+        }
+
+        .kanji-left { left: 10%; top: 20%; }
+        .kanji-right { right: 10%; bottom: 20%; }
+
+        .philosophy-word {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 300;
+            margin-bottom: 3rem;
+            line-height: 1.3;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s ease;
+        }
+
+        .philosophy-word.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .philosophy-word span {
+            color: var(--accent);
+            font-style: italic;
+            text-shadow: 0 0 30px var(--accent-dim);
+        }
+
+        .philosophy-subtext {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.4em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            line-height: 2.5;
+            max-width: 500px;
+            margin: 0 auto;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease 0.3s;
+        }
+
+        .philosophy-subtext.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* The Riddle Section */
+        .riddle {
+            background: var(--bg-secondary);
+            flex-direction: column;
+        }
+
+        .riddle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4rem;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .riddle-container {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+        }
+
+        .riddle-card {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.02) 0%, transparent 100%);
+            border: 1px solid rgba(0, 245, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease;
+        }
+
+        .riddle-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .riddle-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+            transform: scaleX(0);
+            transition: transform 0.8s ease;
+        }
+
+        .riddle-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .riddle-card:hover {
+            border-color: rgba(0, 245, 255, 0.15);
+            box-shadow: 0 0 40px var(--accent-subtle);
+        }
+
+        .riddle-icon {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.6;
+            color: var(--accent);
+        }
+
+        .riddle-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.5em;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .riddle-text {
+            font-size: 1.4rem;
+            font-weight: 300;
+            line-height: 1.8;
+            color: var(--text-primary);
+            opacity: 0.8;
+        }
+
+        /* Signal Section */
+        .signal {
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .signal-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.8em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 4rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease;
+        }
+
+        .signal-header.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .signal-numbers {
+            display: flex;
+            gap: 8rem;
+            margin-bottom: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .signal-numbers {
+                flex-direction: column;
+                gap: 3rem;
+            }
+        }
+
+        .signal-stat {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .signal-stat.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stat-number {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 300;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 40px var(--accent-dim);
+        }
+
+        .stat-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.4em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .signal-source {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.3em;
+            color: rgba(255,255,255,0.2);
+            text-transform: uppercase;
+            opacity: 0;
+            transition: all 1s ease 0.5s;
+        }
+
+        .signal-source.visible {
+            opacity: 1;
+        }
+
+        /* Contact Section */
+        .contact {
+            background: var(--bg-primary);
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .contact-content {
+            max-width: 600px;
+        }
+
+        .contact-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.8em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .contact-text {
+            font-size: 1.8rem;
+            font-weight: 300;
+            line-height: 1.8;
+            margin-bottom: 4rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.2s forwards;
+        }
+
+        .contact-text span {
+            color: var(--accent);
+            text-shadow: 0 0 20px var(--accent-dim);
+        }
+
+        .contact-email {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 1.2rem 3rem;
+            border: 1px solid var(--accent-dim);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.4s forwards;
+        }
+
+        .contact-email::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--accent);
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+
+        .contact-email:hover {
+            color: var(--bg-primary);
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--accent-dim);
+        }
+
+        .contact-email:hover::before {
+            left: 0;
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 2rem;
+            text-align: center;
+            background: var(--bg-primary);
+            border-top: 1px solid rgba(0, 245, 255, 0.05);
+        }
+
+        .footer-logo {
+            width: 100px;
+            height: auto;
+            opacity: 0.4;
+            margin-bottom: 1.5rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-logo:hover {
+            opacity: 0.8;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.4em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .footer-text span {
+            color: var(--accent);
+        }
+
+        /* Horizontal Lines */
+        .h-line {
+            width: 60px;
+            height: 1px;
+            background: var(--accent-dim);
+            margin: 3rem auto;
+            box-shadow: 0 0 10px var(--accent-subtle);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            body {
+                cursor: auto;
+            }
+            .cursor, .cursor-dot {
+                display: none;
+            }
+            .kanji {
+                font-size: 5rem;
+            }
+        }
+
+        /* Selection */
+        ::selection {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        /* Logo hover effect */
+        .logo-container:hover .logo-svg {
+            animation: logo-pulse 0.5s ease;
+        }
+
+        @keyframes logo-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <!-- Noise Overlay -->
+    <div class="noise"></div>
+
+    <!-- Loading Screen -->
+    <div class="loader">
+        <div class="loader-text">Initializing</div>
+        <div class="loader-bar"></div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="particles"></div>
+        <div class="hero-content">
+            <div class="logo-container">
+                <svg class="logo-svg" viewBox="0 0 280 55" xmlns="http://www.w3.org/2000/svg">
+                    <!-- U: 0-30 -->
+                    <path d="M2 8 L2 38 Q2 50 14 50 L18 50 Q30 50 30 38 L30 8" 
+                          fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- N (inverted U, elevated): 48-78 -->
+                    <path d="M48 50 L48 12 Q48 0 60 0 L66 0 Q78 0 78 12 L78 50" 
+                          fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- S: 96-126 -->
+                    <path d="M96 16 Q96 8 106 8 L116 8 Q126 8 126 18 Q126 28 116 28 L106 28 Q96 28 96 38 Q96 50 106 50 L116 50 Q126 50 126 42" 
+                          fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- K: 144-164 (curved arms) -->
+                    <path d="M144 8 L144 50" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M164 8 Q154 18 144 29" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M144 29 Q154 40 164 50" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- I (elevated): 182 -->
+                    <line x1="182" y1="0" x2="182" y2="50" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- L: 200-220 (rounded corner) -->
+                    <path d="M200 8 L200 42 Q200 50 208 50 L220 50" 
+                          fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- D: 238-273 (all corners curved) -->
+                    <path d="M238 16 Q238 8 246 8 L253 8 Q273 8 273 29 Q273 50 253 50 L246 50 Q238 50 238 42 L238 16" 
+                          fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <p class="tagline">The Beginner's Mind</p>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <!-- Philosophy Section -->
+    <section class="philosophy">
+        <span class="kanji kanji-left">初</span>
+        <span class="kanji kanji-right">心</span>
+        <div class="philosophy-content">
+            <p class="philosophy-word">
+                In the expert's mind, there are <span>few</span> possibilities.<br>
+                In the beginner's mind, there are <span>many</span>.
+            </p>
+            <div class="h-line"></div>
+            <p class="philosophy-subtext">
+                We are building physical intelligence<br>
+                that understands the universe<br>
+                before it learns a single task.
+            </p>
+        </div>
+    </section>
+
+    <!-- Riddle Section -->
+    <section class="riddle">
+        <div class="riddle-container">
+            <div class="riddle-card">
+                <div class="riddle-icon">◯</div>
+                <div class="riddle-title">The Question</div>
+                <p class="riddle-text">How does a child manipulate objects it has never seen?</p>
+            </div>
+            <div class="riddle-card">
+                <div class="riddle-icon">△</div>
+                <div class="riddle-title">The Insight</div>
+                <p class="riddle-text">It understands physics. Not tasks.</p>
+            </div>
+            <div class="riddle-card">
+                <div class="riddle-icon">□</div>
+                <div class="riddle-title">The Path</div>
+                <p class="riddle-text">Train on reality. Skills emerge.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Signal Section -->
+    <section class="signal">
+        <p class="signal-header">The Horizon</p>
+        <div class="signal-numbers">
+            <div class="signal-stat">
+                <div class="stat-number">$5T</div>
+                <div class="stat-label">Market by 2050</div>
+            </div>
+            <div class="signal-stat">
+                <div class="stat-number">1B</div>
+                <div class="stat-label">Humanoids in Service</div>
+            </div>
+            <div class="signal-stat">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Possibilities</div>
+            </div>
+        </div>
+        <p class="signal-source">Source: Morgan Stanley Research</p>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact">
+        <div class="contact-content">
+            <p class="contact-label">Stealth Mode</p>
+            <p class="contact-text">
+                We are building in silence.<br>
+                For those who <span>see</span> what we see—
+            </p>
+            <a href="mailto:zero@unskild.ai" class="contact-email">zero@unskild.ai</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <svg class="footer-logo" viewBox="0 0 280 55" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 8 L2 38 Q2 50 14 50 L18 50 Q30 50 30 38 L30 8" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M48 50 L48 12 Q48 0 60 0 L66 0 Q78 0 78 12 L78 50" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M96 16 Q96 8 106 8 L116 8 Q126 8 126 18 Q126 28 116 28 L106 28 Q96 28 96 38 Q96 50 106 50 L116 50 Q126 50 126 42" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M144 8 L144 50" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M164 8 Q154 18 144 29" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M144 29 Q154 40 164 50" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="182" y1="0" x2="182" y2="50" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M200 8 L200 42 Q200 50 208 50 L220 50" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M238 16 Q238 8 246 8 L253 8 Q273 8 273 29 Q273 50 253 50 L246 50 Q238 50 238 42 L238 16" fill="none" stroke="#00f5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p class="footer-text">© 2025 <span>Unskild AI</span> · Physical Intelligence</p>
+    </footer>
+
+    <script>
+        // Loader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelector('.loader').classList.add('hidden');
+            }, 2800);
+        });
+
+        // Custom Cursor
+        const cursor = document.querySelector('.cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+            cursorDot.style.left = e.clientX - 2 + 'px';
+            cursorDot.style.top = e.clientY - 2 + 'px';
+        });
+
+        // Cursor hover effect
+        const hoverElements = document.querySelectorAll('a, .riddle-card, .logo-container');
+        hoverElements.forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Generate Particles
+        const particlesContainer = document.querySelector('.particles');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Scroll Reveal
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements
+        document.querySelectorAll('.philosophy-word, .philosophy-subtext, .riddle-card, .signal-header, .signal-stat, .signal-source').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Staggered animation for riddle cards
+        const riddleCards = document.querySelectorAll('.riddle-card');
+        riddleCards.forEach((card, index) => {
+            card.style.transitionDelay = `${index * 0.2}s`;
+        });
+
+        // Staggered animation for stats
+        const signalStats = document.querySelectorAll('.signal-stat');
+        signalStats.forEach((stat, index) => {
+            stat.style.transitionDelay = `${index * 0.15}s`;
+        });
+
+        // Parallax effect on scroll for kanji
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const kanjis = document.querySelectorAll('.kanji');
+            kanjis.forEach((kanji, index) => {
+                const speed = index === 0 ? 0.3 : -0.3;
+                kanji.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // Number counter animation
+        const statNumbers = document.querySelectorAll('.stat-number');
+        const numberObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    if (el.dataset.animated) return;
+                    el.dataset.animated = true;
+                    
+                    const text = el.textContent;
+                    if (text === '∞') return;
+                    
+                    const match = text.match(/(\$?)(\d+)([TB]?)/);
+                    if (match) {
+                        const [, prefix, num, suffix] = match;
+                        const target = parseInt(num);
+                        let current = 0;
+                        const duration = 2000;
+                        const increment = target / (duration / 16);
+                        
+                        const animate = () => {
+                            current += increment;
+                            if (current < target) {
+                                el.textContent = prefix + Math.floor(current) + suffix;
+                                requestAnimationFrame(animate);
+                            } else {
+                                el.textContent = prefix + target + suffix;
+                            }
+                        };
+                        animate();
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+
+        statNumbers.forEach(el => numberObserver.observe(el));
+    </script>
+</body>
+</html>
