@@ -1,823 +1,874 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Unskild AI — The Cognitive Layer for Humanoid Robots</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unskild Robotics</title>
+<meta name="description" content="Unskild Robotics builds physics-first robots in Pune, India. HALO, a front desk robot designed, built and assembled in India, is open for pre-order. The destination is a general-purpose humanoid.">
+<link rel="canonical" href="https://www.unskild.ai/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Unskild">
+<meta property="og:title" content="Unskild Robotics">
+<meta property="og:description" content="Unskild Robotics builds physics-first robots in Pune, India. HALO, a front desk robot designed, built and assembled in India, is open for pre-order. The destination is a general-purpose humanoid.">
+<meta property="og:url" content="https://www.unskild.ai/">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#050A11" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F6F8" media="(prefers-color-scheme: light)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20rx='18'%20fill='%23050A11'/%3E%3Cg%20fill='none'%20stroke='%2300F5FF'%20stroke-width='4'%20stroke-linecap='round'%20stroke-linejoin='round'%20transform='translate%2812%2025%29'%3E%3Cpath%20d='M2%208%20L2%2038%20Q2%2050%2014%2050%20L18%2050%20Q30%2050%2030%2038%20L30%208'/%3E%3Cpath%20d='M48%2050%20L48%2012%20Q48%200%2060%200%20L66%200%20Q78%200%2078%2012%20L78%2050'/%3E%3C/g%3E%3C/svg%3E">
 <style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an engineering drawing set. Each section is a numbered sheet with a title strip and a dimension-line rule; a faint drafting grid runs behind the whole page; the hero carries a live free-body diagram drawn in blueprint line. Dark is the cyanotype, light is the same drawing on drafting paper. */
 :root {
-  --void:#02020a; --deep:#06060f; --surface:#0b0b1a; --raised:#101025; --lift:#17172f;
-  --teal:#4f8ef7; --teal2:#7aaeff; --teal-dim:rgba(79,142,247,0.12); --teal-glow:rgba(79,142,247,0.28);
-  --gold:#e8914a; --gold-dim:rgba(232,145,74,0.15);
-  --white:#eef0f5; --dim:rgba(238,240,245,0.58); --muted:rgba(238,240,245,0.3); --ghost:rgba(238,240,245,0.07);
-  --border:rgba(255,255,255,0.07); --border-t:rgba(79,142,247,0.22);
+  --bg: #050A11;
+  --surface: #0A121C;
+  --surface-2: #0F1B27;
+  --fg: #E8F1F5;
+  --muted: #8FA6B6;
+  --line: rgba(0, 229, 240, 0.26);
+  --line-soft: rgba(0, 229, 240, 0.11);
+  --grid: rgba(0, 229, 240, 0.045);
+  --accent: #00F5FF;
+  --accent-ink: #4BE3EE;
+  --on-accent: #041017;
+  --logo: #00F5FF;
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  color-scheme: dark;
 }
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{font-family:'Instrument Sans',sans-serif;background:var(--void);color:var(--white);overflow-x:hidden;}
-body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");opacity:0.5;}
-#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.45;}
-.wrap{max-width:1240px;margin:0 auto;padding:0 3rem;position:relative;z-index:2;}
-
-/* CURSOR */
-.cur{width:10px;height:10px;background:var(--teal);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:99999;mix-blend-mode:screen;transition:transform .15s;}
-.cur-ring{width:38px;height:38px;border:1px solid rgba(79,142,247,.35);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:99998;transition:transform .35s cubic-bezier(.23,1,.32,1),border-color .2s;}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:1.5rem 3rem;display:flex;align-items:center;justify-content:space-between;transition:all .35s;}
-nav.sc{background:rgba(2,2,10,.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);padding:1rem 3rem;}
-.logo-wrap{display:flex;align-items:center;gap:.65rem;text-decoration:none;}
-.logo-mark{width:34px;height:34px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:var(--void);box-shadow:0 0 20px rgba(79,142,247,.4);letter-spacing:-.05em;}
-.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;letter-spacing:-.02em;}
-.logo-text em{color:var(--teal);font-style:normal;}
-.nav-links{display:flex;gap:2.5rem;list-style:none;position:absolute;left:50%;transform:translateX(-50%);}
-.nav-links a{font-size:.82rem;color:var(--dim);text-decoration:none;transition:color .2s;position:relative;}
-.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:1px;background:var(--teal);transform:scaleX(0);transform-origin:left;transition:transform .25s;}
-.nav-links a:hover{color:var(--white);}
-.nav-links a:hover::after{transform:scaleX(1);}
-.nav-r{display:flex;gap:1rem;align-items:center;}
-.btn-ghost-sm{font-size:.82rem;font-weight:500;color:var(--dim);background:none;border:1px solid var(--border);border-radius:7px;padding:.55rem 1.2rem;cursor:pointer;text-decoration:none;transition:all .2s;}
-.btn-ghost-sm:hover{color:var(--white);border-color:var(--teal);}
-.btn-teal-sm{font-size:.82rem;font-weight:600;color:var(--void);background:var(--teal);border:none;border-radius:7px;padding:.55rem 1.3rem;cursor:pointer;text-decoration:none;transition:all .2s;box-shadow:0 4px 16px rgba(79,142,247,.3);}
-.btn-teal-sm:hover{background:var(--teal2);box-shadow:0 6px 24px rgba(79,142,247,.5);transform:translateY(-1px);}
-
-/* HERO */
-#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 3rem 5rem;position:relative;overflow:hidden;}
-.hero-glow{position:absolute;top:15%;left:50%;transform:translateX(-50%);width:900px;height:550px;background:radial-gradient(ellipse,rgba(79,142,247,.07) 0%,transparent 70%);pointer-events:none;}
-.pill{display:inline-flex;align-items:center;gap:.6rem;background:rgba(79,142,247,.08);border:1px solid var(--border-t);border-radius:100px;padding:.45rem 1.1rem;margin-bottom:2.5rem;animation:fd .8s ease both;}
-.pill-dot{width:6px;height:6px;background:var(--teal);border-radius:50%;box-shadow:0 0 8px var(--teal);animation:blink 2s infinite;}
-.pill span{font-size:.72rem;font-weight:500;letter-spacing:.08em;color:var(--teal);text-transform:uppercase;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(3rem,7.5vw,8rem);line-height:1;letter-spacing:-.04em;margin-bottom:1.8rem;animation:fd .8s .1s ease both;max-width:1000px;}
-.h1 .l1{display:block;color:var(--white);}
-.h1 .l2{display:block;background:linear-gradient(135deg,var(--teal) 0%,var(--teal2) 50%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.h1 .l3{display:block;color:rgba(240,238,238,.22);font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;}
-.hero-p{font-size:clamp(.95rem,1.6vw,1.15rem);font-weight:300;color:var(--dim);max-width:580px;line-height:1.75;margin-bottom:3rem;animation:fd .8s .2s ease both;}
-.hero-acts{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fd .8s .3s ease both;margin-bottom:5rem;}
-.btn-p{display:inline-flex;align-items:center;gap:.5rem;font-family:'Instrument Sans',sans-serif;font-size:.92rem;font-weight:600;color:var(--void);background:var(--teal);border:none;border-radius:8px;padding:.9rem 2rem;cursor:pointer;text-decoration:none;transition:all .25s;box-shadow:0 4px 24px rgba(79,142,247,.35);}
-.btn-p:hover{background:var(--teal2);transform:translateY(-2px);box-shadow:0 8px 36px rgba(79,142,247,.55);}
-.btn-s{display:inline-flex;align-items:center;gap:.5rem;font-size:.92rem;font-weight:500;color:var(--white);background:var(--ghost);border:1px solid var(--border);border-radius:8px;padding:.9rem 2rem;cursor:pointer;text-decoration:none;transition:all .25s;}
-.btn-s:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-dim);}
-.hero-stats{display:flex;width:100%;max-width:820px;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:rgba(13,13,34,.8);backdrop-filter:blur(20px);animation:fd .8s .45s ease both;}
-.hstat{flex:1;padding:1.5rem;border-right:1px solid var(--border);text-align:center;}
-.hstat:last-child{border-right:none;}
-.hn{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;letter-spacing:-.04em;line-height:1;margin-bottom:.3rem;}
-.hn em{color:var(--teal);font-style:normal;}
-.hl{font-size:.7rem;font-weight:400;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;line-height:1.3;}
-.scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;animation:fd 1s 1s ease both;}
-.scroll-hint span{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
-.scroll-line{width:1px;height:40px;background:linear-gradient(var(--teal),transparent);animation:sp 2s ease-in-out infinite;}
-@keyframes fd{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes sp{0%,100%{transform:scaleY(1);opacity:1}50%{transform:scaleY(.5);opacity:.4}}
-
-/* TICKER */
-.ticker{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface);padding:.85rem 0;overflow:hidden;position:relative;z-index:2;}
-.ticker::before,.ticker::after{content:'';position:absolute;top:0;bottom:0;width:120px;z-index:3;pointer-events:none;}
-.ticker::before{left:0;background:linear-gradient(90deg,var(--surface),transparent);}
-.ticker::after{right:0;background:linear-gradient(-90deg,var(--surface),transparent);}
-.tick-inner{display:flex;animation:rt 28s linear infinite;white-space:nowrap;width:max-content;}
-.tick-inner:hover{animation-play-state:paused;}
-@keyframes rt{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.tick{display:inline-flex;align-items:center;gap:.8rem;padding:0 2.5rem;font-size:.72rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--border);}
-.tick.ft{color:var(--teal);background:rgba(79,142,247,.04);}
-.tick-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
-.tick-badge{background:var(--teal);color:var(--void);font-size:.58rem;font-weight:700;padding:.15rem .55rem;border-radius:100px;}
-
-/* SECTIONS */
-section{position:relative;z-index:2;}
-.eyebrow{display:inline-flex;align-items:center;gap:.6rem;font-size:.7rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:1.2rem;}
-.eyebrow::before{content:'';width:24px;height:1px;background:var(--teal);opacity:.6;}
-.sh2{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2rem,4vw,3.6rem);letter-spacing:-.03em;line-height:1.1;color:var(--white);margin-bottom:1.2rem;}
-.sh2 .t{color:var(--teal);}
-.sh2 .m{color:var(--muted);}
-.sp{font-size:1.05rem;font-weight:300;color:var(--dim);line-height:1.75;max-width:560px;}
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
-.reveal.vis{opacity:1;transform:translateY(0);}
-.d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}.d4{transition-delay:.4s;}
-
-/* PROBLEM */
-#problem{padding:8rem 0;}
-.prob-layout{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
-.pain-cards{display:flex;flex-direction:column;gap:1rem;margin-top:2.5rem;}
-.pain-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.4rem 1.6rem;display:flex;gap:1rem;align-items:flex-start;transition:all .25s;}
-.pain-card:hover{border-color:rgba(79,142,247,.3);transform:translateX(4px);}
-.pain-ico{width:36px;height:36px;flex-shrink:0;background:var(--raised);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--teal);}
-.pain-t{font-size:.9rem;font-weight:600;color:var(--white);margin-bottom:.3rem;}
-.pain-d{font-size:.83rem;color:var(--muted);line-height:1.55;font-weight:300;}
-.opp-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;position:relative;overflow:hidden;}
-.opp-box::before{content:'';position:absolute;top:0;right:0;width:200px;height:200px;background:radial-gradient(circle,rgba(79,142,247,.1),transparent 70%);}
-.opp-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);margin-bottom:2rem;}
-.obars{display:flex;flex-direction:column;gap:1.2rem;}
-.obl{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;}
-.obn{font-size:.82rem;color:var(--dim);}
-.obv{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--white);}
-.obtrack{height:6px;background:var(--raised);border-radius:100px;overflow:hidden;}
-.obfill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal),var(--teal2));transform-origin:left;transform:scaleX(0);animation:bg 1.5s cubic-bezier(.23,1,.32,1) forwards;}
-@keyframes bg{to{transform:scaleX(1)}}
-.obfill.d1{animation-delay:.3s;}.obfill.d2{animation-delay:.5s;}.obfill.d3{animation-delay:.7s;}.obfill.d4{animation-delay:.9s;}
-.opp-note{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);line-height:1.55;font-style:italic;}
-.moment-box{margin-top:1.5rem;padding:1.5rem 1.8rem;border:1px solid var(--border-t);border-radius:12px;background:rgba(79,142,247,.04);}
-.moment-label{font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);margin-bottom:.6rem;}
-.moment-text{font-size:.9rem;color:var(--dim);line-height:1.65;font-weight:300;font-style:italic;}
-
-/* WHAT WE DO */
-#what{padding:8rem 0;background:linear-gradient(180deg,transparent,rgba(79,142,247,.02) 50%,transparent);}
-.what-hdr{text-align:center;margin-bottom:5rem;}
-.wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
-.wcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2.2rem;transition:all .3s;position:relative;overflow:hidden;}
-.wcard:hover{border-color:var(--border-t);transform:translateY(-4px);box-shadow:0 20px 60px rgba(79,142,247,.08);}
-.wcard::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at top left,rgba(79,142,247,.06),transparent 60%);opacity:0;transition:opacity .3s;}
-.wcard:hover::after{opacity:1;}
-.wc-ico{width:44px;height:44px;background:var(--teal-dim);border:1px solid var(--border-t);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--teal);margin-bottom:1.2rem;}
-.wc-t{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:-.02em;color:var(--white);margin-bottom:.7rem;}
-.wc-d{font-size:.87rem;color:var(--dim);line-height:1.65;font-weight:300;}
-.wfeat{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
-.wf-l{padding:3rem;border-right:1px solid var(--border);}
-.wf-r{padding:3rem;background:rgba(79,142,247,.02);}
-.pcomp{display:flex;flex-direction:column;gap:0;}
-.prow{display:grid;grid-template-columns:100px 1fr 1fr;border-bottom:1px solid var(--border);}
-.prow:last-child{border-bottom:none;}
-.plabel{padding:1rem 1.2rem;font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--border);display:flex;align-items:center;}
-.pcell{padding:1rem 1.2rem;font-size:.83rem;line-height:1.5;font-weight:300;border-right:1px solid var(--border);}
-.pcell:last-child{border-right:none;}
-.ph{padding:.7rem 1.2rem;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-right:1px solid var(--border);}
-.ph:last-child{border-right:none;}
-.ph.old{color:rgba(240,238,238,.3);}
-.ph.new{color:var(--teal);background:rgba(79,142,247,.04);}
-.pcell.old{color:rgba(240,238,238,.3);}
-.pcell.new{color:var(--dim);background:rgba(79,142,247,.02);}
-.ptag{display:inline-block;font-size:.7rem;font-weight:600;color:var(--teal);background:var(--teal-dim);border-radius:4px;padding:.15rem .5rem;margin-bottom:.3rem;}
-
-/* RECOGNITION */
-#recognition{padding:8rem 0;}
-.rec-hdr{text-align:center;margin-bottom:4rem;}
-.rec-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin-bottom:1.5rem;}
-.rcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2rem 2.2rem;display:flex;gap:1.5rem;align-items:flex-start;transition:all .3s;position:relative;overflow:hidden;}
-.rcard:hover{border-color:var(--border-t);box-shadow:0 16px 48px rgba(79,142,247,.08);transform:translateY(-2px);}
-.rcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent);}
-.rico{width:52px;height:52px;flex-shrink:0;background:var(--teal-dim);border:1px solid var(--border-t);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--teal);}
-.rbadge{display:inline-flex;align-items:center;gap:.4rem;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);background:var(--teal-dim);border:1px solid var(--border-t);border-radius:100px;padding:.3rem .8rem;margin-bottom:.6rem;width:fit-content;}
-.rt{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:-.02em;color:var(--white);margin-bottom:.5rem;}
-.rd{font-size:.85rem;color:var(--dim);line-height:1.6;font-weight:300;}
-.rstats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;border:1px solid var(--border);}
-.rsc{background:var(--surface);padding:1.8rem;text-align:center;transition:background .25s;}
-.rsc:hover{background:var(--raised);}
-.rsn{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.04em;color:var(--white);margin-bottom:.3rem;}
-.rsn em{color:var(--teal);font-style:normal;}
-.rsl{font-size:.75rem;color:var(--muted);font-weight:400;line-height:1.4;}
-
-/* MARKET */
-#market{padding:8rem 0;background:linear-gradient(180deg,transparent,rgba(13,13,34,.8) 30%,rgba(13,13,34,.8) 70%,transparent);}
-.mkt-layout{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
-.mnums{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:14px;overflow:hidden;border:1px solid var(--border);}
-.mcard{background:var(--surface);padding:2rem;position:relative;overflow:hidden;transition:background .25s;}
-.mcard:hover{background:var(--raised);}
-.mcard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent);transform:scaleX(0);transform-origin:left;transition:transform .4s;}
-.mcard:hover::after{transform:scaleX(1);}
-.mn{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;letter-spacing:-.04em;color:var(--white);line-height:1;margin-bottom:.4rem;}
-.mn em{color:var(--teal);font-style:normal;}
-.ml{font-size:.72rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;}
-.md{font-size:.8rem;color:var(--dim);line-height:1.5;font-weight:300;}
-.ms{margin-top:.8rem;font-size:.65rem;color:var(--muted);font-style:italic;opacity:.7;}
-.mthesis{display:flex;flex-direction:column;gap:1.2rem;margin-top:2.5rem;}
-.mti{display:flex;gap:1rem;padding:1.2rem 1.4rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;transition:all .25s;}
-.mti:hover{border-color:var(--border-t);transform:translateX(4px);}
-.mt-n{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--teal);flex-shrink:0;width:28px;opacity:.5;}
-.mt-t{font-size:.88rem;font-weight:600;color:var(--white);margin-bottom:.25rem;}
-.mt-d{font-size:.8rem;color:var(--muted);line-height:1.5;font-weight:300;}
-
-/* PARTNERSHIP */
-#partner{padding:8rem 0;}
-.part-intro{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:end;margin-bottom:4rem;}
-.pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
-.pc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2rem;transition:all .3s;position:relative;overflow:hidden;}
-.pc:hover{border-color:var(--border-t);transform:translateY(-4px);box-shadow:0 20px 60px rgba(79,142,247,.1);}
-.pc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--teal2));transform:scaleX(0);transform-origin:left;transition:transform .4s;}
-.pc:hover::before{transform:scaleX(1);}
-.pctag{font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);background:var(--teal-dim);border-radius:100px;padding:.25rem .8rem;display:inline-block;margin-bottom:1.2rem;}
-.pct{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--white);margin-bottom:.7rem;letter-spacing:-.02em;}
-.pcd{font-size:.83rem;color:var(--dim);line-height:1.6;font-weight:300;margin-bottom:1.5rem;}
-.pcl{list-style:none;display:flex;flex-direction:column;gap:.4rem;}
-.pcl li{font-size:.78rem;color:var(--muted);font-weight:300;display:flex;align-items:flex-start;gap:.5rem;line-height:1.4;}
-.pcl li::before{content:'→';color:var(--teal);flex-shrink:0;font-size:.7rem;}
-
-/* VISION */
-#vision{padding:10rem 0;text-align:center;position:relative;overflow:hidden;}
-.vglow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:400px;background:radial-gradient(ellipse,rgba(79,142,247,.06),transparent 70%);pointer-events:none;}
-.veyebrow{display:inline-flex;align-items:center;gap:.6rem;font-size:.7rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;}
-.vh2{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.8rem,6vw,6.5rem);letter-spacing:-.04em;line-height:1.05;margin-bottom:2rem;}
-.vh2 .vl1{display:block;color:rgba(240,238,238,.18);font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;}
-.vh2 .vl2{display:block;color:var(--white);}
-.vh2 .vl3{display:block;background:linear-gradient(90deg,var(--teal),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.vbody{font-size:1.1rem;font-weight:300;color:var(--dim);max-width:640px;margin:0 auto 3.5rem;line-height:1.8;position:relative;z-index:1;}
-.vpills{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:14px;overflow:hidden;border:1px solid var(--border);margin-top:4rem;text-align:left;}
-.vp{background:var(--surface);padding:2rem 2.2rem;transition:background .25s;}
-.vp:hover{background:var(--raised);}
-.vpn{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--ghost);letter-spacing:-.05em;line-height:1;margin-bottom:1rem;}
-.vpt{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--white);margin-bottom:.6rem;}
-.vpd{font-size:.83rem;color:var(--dim);line-height:1.65;font-weight:300;}
-
-/* CTA */
-#contact{padding:7rem 0;}
-.cta-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4rem;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;overflow:hidden;}
-.cta-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--teal),transparent);}
-.cta-glow{position:absolute;top:-50%;right:-10%;width:400px;height:400px;background:radial-gradient(circle,rgba(79,142,247,.06),transparent 70%);pointer-events:none;}
-.cta-h2{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.8rem,3vw,2.8rem);letter-spacing:-.03em;line-height:1.1;margin-bottom:1rem;}
-.cta-h2 em{color:var(--teal);font-style:normal;}
-.cta-sub{font-size:.95rem;color:var(--dim);line-height:1.7;font-weight:300;}
-.ctabs{display:flex;gap:.4rem;margin-bottom:1.5rem;flex-wrap:wrap;}
-.ctab{font-size:.75rem;font-weight:600;letter-spacing:.05em;padding:.45rem 1rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:all .2s;}
-.ctab.on,.ctab:hover{background:var(--teal-dim);border-color:var(--border-t);color:var(--teal);}
-.cform{display:flex;flex-direction:column;gap:.8rem;}
-.cinput{background:var(--raised);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'Instrument Sans',sans-serif;font-size:.88rem;padding:.85rem 1.1rem;outline:none;transition:border-color .2s;width:100%;}
-.cinput:focus{border-color:var(--teal);}
-.cinput::placeholder{color:var(--muted);}
-
-/* FOOTER */
-footer{position:relative;z-index:2;border-top:1px solid var(--border);background:var(--deep);padding:4rem 3rem 2rem;}
-.ft{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:4rem;margin-bottom:3rem;}
-.ftagline{font-size:.83rem;color:var(--muted);line-height:1.65;font-weight:300;max-width:280px;margin-bottom:1.5rem;}
-.fsocials{display:flex;gap:.6rem;}
-.fsoc{width:34px;height:34px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);text-decoration:none;transition:all .2s;}
-.fsoc:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-dim);}
-.fch{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--white);margin-bottom:1.2rem;}
-.flinks{list-style:none;display:flex;flex-direction:column;gap:.65rem;}
-.flinks a{font-size:.83rem;color:var(--muted);text-decoration:none;transition:color .2s;}
-.flinks a:hover{color:var(--teal);}
-.fb{max-width:1240px;margin:0 auto;border-top:1px solid var(--border);padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;}
-.fcopy{font-size:.75rem;color:var(--muted);}
-.floc{font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:.4rem;}
-
-/* RESPONSIVE */
-@media(max-width:1024px){
-  .prob-layout,.mkt-layout,.part-intro{grid-template-columns:1fr;gap:3rem;}
-  .wgrid{grid-template-columns:1fr 1fr;}
-  .wfeat{grid-template-columns:1fr;}
-  .wf-l{border-right:none;border-bottom:1px solid var(--border);}
-  .ft{grid-template-columns:1fr 1fr;gap:2.5rem;}
-  .cta-box{grid-template-columns:1fr;gap:2.5rem;padding:2.5rem;}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #F2F6F8;
+    --surface: #FFFFFF;
+    --surface-2: #E8EFF2;
+    --fg: #0C1820;
+    --muted: #536878;
+    --line: rgba(0, 110, 126, 0.30);
+    --line-soft: rgba(0, 110, 126, 0.14);
+    --grid: rgba(0, 110, 126, 0.07);
+    --accent: #087A8A;
+    --accent-ink: #086E7D;
+    --on-accent: #FFFFFF;
+    --logo: #0C1820;
+    color-scheme: light;
+  }
 }
-@media(max-width:768px){
-  .wrap{padding:0 1.5rem;}
-  nav{padding:1rem 1.5rem;}
-  .nav-links{display:none;}
-  .h1{font-size:2.8rem;}
-  .hero-stats{flex-direction:column;}
-  .hstat{border-right:none;border-bottom:1px solid var(--border);}
-  .rec-grid{grid-template-columns:1fr;}
-  .rstats{grid-template-columns:1fr 1fr;}
-  .mnums{grid-template-columns:1fr 1fr;}
-  .wgrid{grid-template-columns:1fr;}
-  .pcards{grid-template-columns:1fr;}
-  .vpills{grid-template-columns:1fr;}
-  .ft{grid-template-columns:1fr;}
-  .cur,.cur-ring{display:none;}
-  .prow{grid-template-columns:1fr 1fr;}
-  .plabel{display:none;}
+:root[data-theme="light"] {
+  --bg: #F2F6F8;
+  --surface: #FFFFFF;
+  --surface-2: #E8EFF2;
+  --fg: #0C1820;
+  --muted: #536878;
+  --line: rgba(0, 110, 126, 0.30);
+  --line-soft: rgba(0, 110, 126, 0.14);
+  --grid: rgba(0, 110, 126, 0.07);
+  --accent: #087A8A;
+  --accent-ink: #086E7D;
+  --on-accent: #FFFFFF;
+  --logo: #0C1820;
+  color-scheme: light;
 }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--fg);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 30;
+  background: var(--bg);
+}
+@media (min-width: 900px) { body { font-size: 1.0625rem; } }
+
+a { color: var(--accent-ink); }
+p { margin: 0; text-wrap: pretty; }
+::selection { background: var(--accent); color: var(--on-accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+svg { display: block; }
+
+.wrap {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (min-width: 900px) {
+  .wrap {
+    padding-left: max(32px, env(safe-area-inset-left, 0px));
+    padding-right: max(32px, env(safe-area-inset-right, 0px));
+  }
+}
+
+/* Type */
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2.25rem, 5vw, 4rem); line-height: 1.02; font-weight: 620; font-stretch: 112%; letter-spacing: -0.015em; }
+h2 { font-size: clamp(1.7rem, 3.2vw, 2.6rem); line-height: 1.08; font-weight: 600; font-stretch: 110%; letter-spacing: -0.012em; max-width: 24ch; }
+h3 { font-size: 1.15rem; line-height: 1.3; font-weight: 600; font-stretch: 105%; }
+.lead { font-size: clamp(1.05rem, 1.4vw, 1.25rem); line-height: 1.55; color: var(--muted); max-width: 60ch; }
+.mono { font-family: var(--font-mono); font-weight: 500; font-size: 0.72rem; line-height: 1.5; letter-spacing: 0.14em; text-transform: uppercase; }
+.stack { display: grid; gap: 22px; }
+.stack-lg { display: grid; gap: 40px; }
+.prose { display: grid; gap: 16px; max-width: 62ch; }
+.prose p { color: var(--fg); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 12px 20px; border-radius: 2px;
+  font-family: var(--font-body); font-weight: 600; font-stretch: 105%; font-size: 0.95rem; line-height: 1;
+  border: 1px solid var(--accent); color: var(--accent-ink); background: transparent;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background-color .15s ease, color .15s ease, transform .15s ease;
+}
+.btn:hover { background: var(--line-soft); }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-ink); color: var(--on-accent); }
+.btn-sm { padding: 9px 14px; font-size: 0.85rem; }
+.btn svg { width: 14px; height: 14px; }
+
+/* Header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; }
+.brand { display: inline-flex; align-items: center; color: var(--logo); text-decoration: none; }
+.brand svg { height: 22px; width: auto; }
+.nav { display: none; align-items: center; gap: 26px; list-style: none; margin: 0; padding: 0; }
+.nav a { font-family: var(--font-mono); font-weight: 500; font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); text-decoration: none; padding: 8px 0; }
+.nav a:hover { color: var(--fg); }
+.top-actions { display: flex; align-items: center; gap: 10px; }
+.menu-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid var(--line); color: var(--fg); padding: 9px 12px; border-radius: 2px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+.nav.open {
+  display: flex; position: absolute; left: 0; right: 0; top: 100%;
+  flex-direction: column; align-items: stretch; gap: 0;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+  padding: 8px max(16px, env(safe-area-inset-left, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
+}
+.nav.open a { padding: 12px 0; border-top: 1px solid var(--line-soft); }
+@media (min-width: 900px) {
+  .nav { display: flex; }
+  .menu-btn { display: none; }
+}
+
+/* Sheets */
+.sheet { padding-block: clamp(56px, 8vw, 104px); border-top: 1px solid var(--line-soft); }
+.sheet-head { display: flex; align-items: center; gap: 18px; margin: 0 0 30px; color: var(--muted); }
+.sheet-head .rule { flex: 1; min-width: 24px; height: 1px; background: var(--line); position: relative; }
+.sheet-head .rule::before, .sheet-head .rule::after { content: ""; position: absolute; top: -4px; width: 1px; height: 9px; background: var(--line); }
+.sheet-head .rule::before { left: 0; }
+.sheet-head .rule::after { right: 0; }
+.sheet-head span { min-width: 0; }
+.sheet-head span:last-child { text-align: right; }
+
+/* Hero */
+.hero { border-top: 0; padding-top: clamp(40px, 6vw, 80px); }
+.hero-grid { display: grid; gap: 40px; align-items: center; }
+@media (min-width: 960px) { .hero-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 60px; } }
+.hero-copy { display: grid; gap: 26px; min-width: 0; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.status { display: flex; flex-wrap: wrap; gap: 10px 24px; margin: 0; padding: 0; list-style: none; color: var(--muted); }
+.status li { display: flex; align-items: center; gap: 9px; }
+.status .led { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--line-soft); animation: led 2.4s ease-in-out infinite; }
+@keyframes led { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .status .led { animation: none; } }
+
+.fig { border: 1px solid var(--line); background: var(--surface); min-width: 0; }
+.fig-head, .fig-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; padding: 10px 14px; color: var(--muted); text-transform: none; letter-spacing: 0.08em; }
+.fig-head span:first-child { text-transform: uppercase; letter-spacing: 0.14em; }
+.fig-head { border-bottom: 1px solid var(--line-soft); }
+.fig-foot { border-top: 1px solid var(--line-soft); font-variant-numeric: tabular-nums; }
+.fig-foot b { color: var(--fg); font-weight: 500; }
+.fig canvas { display: block; width: 100%; max-width: 100%; aspect-ratio: 4 / 3; }
+.fig-note { font-size: 0.92rem; color: var(--muted); margin-top: 14px; max-width: 54ch; }
+
+/* HALO */
+.caps { display: grid; gap: 1px; background: var(--line-soft); border: 1px solid var(--line-soft); }
+@media (min-width: 640px) { .caps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .caps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.cap { background: var(--surface); padding: 22px 20px 24px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.cap .n { color: var(--accent-ink); }
+.cap b { font-size: 1.1rem; font-weight: 600; font-stretch: 105%; line-height: 1.25; }
+.cap p { color: var(--muted); font-size: 0.95rem; }
+.where { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; color: var(--muted); }
+.where span { border: 1px solid var(--line-soft); padding: 6px 10px; border-radius: 2px; color: var(--fg); font-size: 0.85rem; }
+
+.halo-grid { display: grid; gap: 32px; align-items: start; }
+@media (min-width: 960px) { .halo-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); gap: 48px; } }
+.spec { margin: 0; display: grid; }
+.spec > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 20px; padding: 14px 0; border-top: 1px solid var(--line-soft); }
+.spec > div:last-child { border-bottom: 1px solid var(--line-soft); }
+@media (min-width: 560px) { .spec > div { grid-template-columns: 150px minmax(0, 1fr); } }
+.spec dt { color: var(--muted); padding-top: 3px; }
+.spec dd { margin: 0; }
+
+.panel { border: 1px solid var(--line); background: var(--surface); padding: 24px; display: grid; gap: 14px; min-width: 0; }
+.panel.is-accent { border-color: var(--accent); }
+.panel ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+.panel li { display: flex; gap: 12px; align-items: flex-start; font-size: 0.95rem; }
+.panel li::before { content: ""; flex: none; width: 6px; height: 6px; margin-top: 9px; border: 1px solid var(--accent-ink); transform: rotate(45deg); }
+.panel .small { font-size: 0.85rem; color: var(--muted); }
+.aside { display: grid; gap: 18px; }
+
+.faq { display: grid; border-top: 1px solid var(--line-soft); }
+.faq details { border-bottom: 1px solid var(--line-soft); }
+.faq summary { cursor: pointer; padding: 16px 0; font-weight: 600; font-stretch: 104%; list-style: none; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-family: var(--font-mono); color: var(--accent-ink); flex: none; }
+.faq details[open] summary::after { content: "\2013"; }
+.faq details p { padding: 0 0 18px; color: var(--muted); max-width: 64ch; }
+
+/* Approach */
+.pipe { display: grid; gap: 12px; }
+@media (min-width: 900px) { .pipe { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.45fr) auto minmax(0, 1fr); gap: 0; align-items: stretch; } }
+.stage { border: 1px solid var(--line); background: var(--surface); padding: 18px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.stage .k { color: var(--muted); }
+.stage b { font-size: 1.05rem; font-weight: 600; font-stretch: 105%; }
+.stage .d { font-size: 0.9rem; color: var(--muted); }
+.stage.is-physics { border-color: var(--accent); background: var(--surface); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.stage.is-physics em { font-style: normal; color: var(--accent-ink); margin-top: 6px; }
+.arrow { position: relative; justify-self: center; align-self: center; width: 1px; height: 26px; background: var(--line); }
+.arrow::after { content: ""; position: absolute; left: -4px; bottom: -1px; border: 4px solid transparent; border-top: 6px solid var(--accent-ink); }
+@media (min-width: 900px) {
+  .arrow { width: 36px; height: 1px; }
+  .arrow::after { left: auto; right: -1px; top: -4px; bottom: auto; border: 4px solid transparent; border-left: 6px solid var(--accent-ink); }
+}
+.tracks { display: grid; gap: 22px; }
+@media (min-width: 760px) { .tracks { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; } }
+.track { border-top: 2px solid var(--line); padding-top: 14px; display: grid; gap: 8px; min-width: 0; }
+.track .k { color: var(--accent-ink); }
+.track p { color: var(--muted); font-size: 0.97rem; }
+.kit { display: flex; flex-wrap: wrap; gap: 8px; }
+.kit span { border: 1px solid var(--line-soft); padding: 5px 9px; border-radius: 2px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--fg); }
+
+/* Roadmap */
+.ladder { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+@media (min-width: 640px) { .ladder { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; } }
+@media (min-width: 1100px) {
+  .ladder { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; align-items: end; }
+  .rung { margin-bottom: calc(var(--i) * 22px); min-height: 136px; }
+}
+.rung { border-top: 2px solid var(--line); padding-top: 12px; display: grid; gap: 6px; min-width: 0; align-content: start; }
+.rung .n { color: var(--muted); }
+.rung b { font-size: 1.02rem; font-weight: 600; font-stretch: 105%; line-height: 1.2; }
+.rung p { font-size: 0.88rem; color: var(--muted); line-height: 1.45; }
+.rung.is-now { border-top-color: var(--accent); }
+.rung.is-now .n { color: var(--accent-ink); }
+.rung em { font-style: normal; font-family: var(--font-mono); font-weight: 500; font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--on-accent); background: var(--accent); padding: 5px 7px; justify-self: start; margin-top: 4px; }
+
+/* Research */
+.papers { list-style: none; margin: 0; padding: 0; display: grid; }
+.papers li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px 20px; align-items: baseline; padding: 16px 0; border-top: 1px solid var(--line-soft); }
+.papers li:last-child { border-bottom: 1px solid var(--line-soft); }
+.papers .n { color: var(--accent-ink); }
+.papers b { display: block; font-weight: 600; font-stretch: 104%; }
+.papers .d { display: block; color: var(--muted); font-size: 0.92rem; }
+.papers a, .link { font-family: var(--font-mono); font-weight: 500; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 3px; white-space: nowrap; }
+.papers a:hover, .link:hover { border-bottom-color: var(--accent-ink); }
+@media (max-width: 560px) { .papers li { grid-template-columns: auto minmax(0, 1fr); } .papers a { grid-column: 2; justify-self: start; } }
+
+/* Company */
+.company { display: grid; gap: 40px; align-items: start; }
+@media (min-width: 960px) { .company { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 56px; } }
+.mark { color: var(--muted); max-width: 520px; padding: 8px 0 4px; }
+.mark svg { width: 100%; height: auto; }
+.mark .ai { stroke: var(--accent); }
+.facts { margin: 0; display: grid; }
+.facts > div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 12px; padding: 11px 0; border-top: 1px solid var(--line-soft); font-size: 0.95rem; }
+.facts > div:last-child { border-bottom: 1px solid var(--line-soft); }
+.facts dt { color: var(--muted); padding-top: 3px; }
+.facts dd { margin: 0; }
+.founder { display: grid; gap: 10px; }
+.founder b { font-size: 1.25rem; font-weight: 600; font-stretch: 108%; }
+.founder p { color: var(--muted); font-size: 0.95rem; }
+
+.who { display: grid; gap: 1px; background: var(--line-soft); border: 1px solid var(--line-soft); }
+@media (min-width: 700px) { .who { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .who { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.who > div { background: var(--surface); padding: 20px; display: grid; gap: 8px; align-content: start; grid-template-rows: auto 1fr auto; min-width: 0; }
+.who b { font-size: 1.02rem; font-weight: 600; font-stretch: 105%; }
+.who p { font-size: 0.9rem; color: var(--muted); }
+.who .link { justify-self: start; margin-top: 6px; }
+
+/* Contact */
+.contact-grid { display: grid; gap: 32px; }
+@media (min-width: 900px) { .contact-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr); gap: 56px; } }
+.email-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; }
+.email { font-family: var(--font-display); font-weight: 600; font-stretch: 110%; font-size: clamp(1.35rem, 4vw, 2.6rem); letter-spacing: -0.01em; line-height: 1.1; color: var(--fg); overflow-wrap: anywhere; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips a { border: 1px solid var(--line); padding: 8px 12px; border-radius: 2px; text-decoration: none; color: var(--fg); font-size: 0.88rem; }
+.chips a:hover { border-color: var(--accent-ink); }
+.socials { display: grid; gap: 10px; }
+.socials a { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--line-soft); text-decoration: none; color: var(--fg); }
+.socials a:last-child { border-bottom: 1px solid var(--line-soft); }
+.socials a span.k { color: var(--muted); }
+.socials a:hover span.v { color: var(--accent-ink); }
+
+/* Footer */
+.foot { border-top: 1px solid var(--line); padding-block: 28px 36px; }
+.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 28px; color: var(--muted); }
+.foot .brand svg { height: 18px; }
+.foot .legal { display: flex; flex-wrap: wrap; gap: 6px 22px; font-family: var(--font-mono); font-weight: 500; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.8; }
 </style>
 </head>
 <body>
-
-<div class="cur" id="cur"></div>
-<div class="cur-ring" id="curRing"></div>
-<canvas id="bg-canvas"></canvas>
-
-<!-- ═══ NAV ═══ -->
-<nav id="nav">
-  <a href="#" class="logo-wrap">
-    <span class="logo-text">Unskild AI</span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#what">What We Do</a></li>
-    <li><a href="#recognition">Recognition</a></li>
-    <li><a href="#market">Market</a></li>
-    <li><a href="#partner">Partner</a></li>
-    <li><a href="#vision">Vision</a></li>
-  </ul>
-  <div class="nav-r">
-    <a href="#contact" class="btn-ghost-sm">Investors</a>
-    <a href="#contact" class="btn-teal-sm">Get in Touch</a>
-  </div>
-</nav>
-
-<!-- ═══ HERO ═══ -->
-<section id="hero">
-  <div class="hero-glow"></div>
-  <div class="pill"><span class="pill-dot"></span><span>The Cognitive Layer for the Physical Economy</span></div>
-  <h1 class="h1">
-    <span class="l1">Robots That</span>
-    <span class="l2">Understand the World</span>
-    <span class="l3">not just their instructions</span>
-  </h1>
-  <p class="hero-p">Unskild AI builds universal cognitive software for humanoid robots — a physics-first intelligence layer that adapts to any body, any environment, and any task it has never encountered before.</p>
-  <div class="hero-acts">
-    <a href="#partner" class="btn-p">Partner With Us <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-    <a href="#what" class="btn-s">See How It Works <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-  </div>
-  <div class="hero-stats">
-    <div class="hstat"><div class="hn">$5<em>T</em></div><div class="hl">Physical AI<br>Market 2050</div></div>
-    <div class="hstat"><div class="hn">1<em>B</em></div><div class="hl">Humanoids<br>in Service</div></div>
-    <div class="hstat"><div class="hn">$38<em>B</em></div><div class="hl">Market Size<br>by 2035</div></div>
-    <div class="hstat"><div class="hn">50<em>M</em></div><div class="hl">Global Labor<br>Shortage</div></div>
-  </div>
-  <div class="scroll-hint"><span>Explore</span><div class="scroll-line"></div></div>
-</section>
-
-<!-- ═══ TICKER ═══ -->
-<div class="ticker">
-  <div class="tick-inner">
-    <div class="tick ft"><span class="tick-dot"></span>NVIDIA Inception Program<span class="tick-badge">Member</span></div>
-    <div class="tick ft"><span class="tick-dot"></span>Mass Robotics In-House Development<span class="tick-badge">Invited</span></div>
-    <div class="tick"><span class="tick-dot"></span>Physics-First Architecture</div>
-    <div class="tick"><span class="tick-dot"></span>Embodied AI Research</div>
-    <div class="tick"><span class="tick-dot"></span>Published International Research</div>
-    <div class="tick"><span class="tick-dot"></span>20+ Years Enterprise AI</div>
-    <div class="tick"><span class="tick-dot"></span>Universal Cognitive Platform</div>
-    <div class="tick"><span class="tick-dot"></span>Sim-to-Real Transfer</div>
-    <div class="tick ft"><span class="tick-dot"></span>NVIDIA Inception Program<span class="tick-badge">Member</span></div>
-    <div class="tick ft"><span class="tick-dot"></span>Mass Robotics In-House Development<span class="tick-badge">Invited</span></div>
-    <div class="tick"><span class="tick-dot"></span>Physics-First Architecture</div>
-    <div class="tick"><span class="tick-dot"></span>Embodied AI Research</div>
-    <div class="tick"><span class="tick-dot"></span>Published International Research</div>
-    <div class="tick"><span class="tick-dot"></span>20+ Years Enterprise AI</div>
-    <div class="tick"><span class="tick-dot"></span>Universal Cognitive Platform</div>
-    <div class="tick"><span class="tick-dot"></span>Sim-to-Real Transfer</div>
-  </div>
-</div>
-
-<!-- ═══ PROBLEM ═══ -->
-<section id="problem">
+<header class="top">
   <div class="wrap">
-    <div class="prob-layout">
-      <div>
-        <div class="eyebrow reveal">The Gap</div>
-        <h2 class="sh2 reveal">The Hardware Exists.<br><span class="t">The Brain Doesn't.</span></h2>
-        <p class="sp reveal">Humanoid hardware costs dropped below $100K. Billions are invested in bodies. But robots still fail the moment they leave the demo floor. The bottleneck has always been intelligence — and we're here to solve it.</p>
-        <div class="pain-cards">
-          <div class="pain-card reveal d1">
-            <div class="pain-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-            <div>
-              <div class="pain-t">Manufacturers have hardware — not cognitive AI</div>
-              <div class="pain-d">Robotics companies build impressive hardware, then discover world-class AI requires entirely different expertise. Hardware companies cannot become AI labs overnight.</div>
-            </div>
-          </div>
-          <div class="pain-card reveal d2">
-            <div class="pain-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
-            <div>
-              <div class="pain-t">Enterprises expected autonomy — got babysitters</div>
-              <div class="pain-d">Companies purchase robots expecting productivity gains, then hire entire teams of "robot trainers" to manually supervise every unit. The ROI never arrives.</div>
-            </div>
-          </div>
-          <div class="pain-card reveal d3">
-            <div class="pain-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-            <div>
-              <div class="pain-t">Task-trained AI breaks outside training data</div>
-              <div class="pain-d">Every new object, environment, or context requires fresh training runs costing months and millions. The real world doesn't wait for retraining cycles.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="opp-box reveal d1">
-          <div class="opp-title">Market Trajectory</div>
-          <div class="obars">
-            <div>
-              <div class="obl"><span class="obn">Physical AI Market (2050)</span><span class="obv">$5T</span></div>
-              <div class="obtrack"><div class="obfill d1" style="width:100%"></div></div>
-            </div>
-            <div>
-              <div class="obl"><span class="obn">Humanoid Market (2035)</span><span class="obv">$38B</span></div>
-              <div class="obtrack"><div class="obfill d2" style="width:62%"></div></div>
-            </div>
-            <div>
-              <div class="obl"><span class="obn">Hardware Cost Reduction</span><span class="obv">−85%</span></div>
-              <div class="obtrack"><div class="obfill d3" style="width:85%"></div></div>
-            </div>
-            <div>
-              <div class="obl"><span class="obn">Global Labor Shortage</span><span class="obv">50M+</span></div>
-              <div class="obtrack"><div class="obfill d4" style="width:75%"></div></div>
-            </div>
-          </div>
-          <div class="opp-note">Sources: Morgan Stanley, Goldman Sachs, WEF. Hardware cost reference: Unitree Robotics.</div>
-        </div>
-        <div class="moment-box reveal d2">
-          <div class="moment-label">The Moment</div>
-          <div class="moment-text">"Foundation models proved general AI works. Simulation enables thousands of years of training in days. Hardware hit the mass-market price point. <strong style="color:var(--white);font-weight:500;font-style:normal;">The brain became the bottleneck.</strong> We're building at exactly that moment."</div>
-        </div>
-      </div>
+    <a class="brand" href="#top" aria-label="Unskild, home">
+      <svg viewBox="-2 -2 279 54" role="img" aria-label="Unskild">
+        <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 8 L2 38 Q2 50 14 50 L18 50 Q30 50 30 38 L30 8"/>
+          <path d="M48 50 L48 12 Q48 0 60 0 L66 0 Q78 0 78 12 L78 50"/>
+          <path d="M126 16 Q126 8 116 8 L106 8 Q96 8 96 18 Q96 28 106 28 L116 28 Q126 28 126 38 Q126 50 116 50 L106 50 Q96 50 96 42"/>
+          <path d="M144 8 L144 50"/>
+          <path d="M164 8 L148 22 Q140 29 148 36 L164 50"/>
+          <path d="M182 0 L182 50"/>
+          <path d="M200 8 L200 42 Q200 50 208 50 L220 50"/>
+          <path d="M238 16 Q238 8 246 8 L253 8 Q273 8 273 29 Q273 50 253 50 L246 50 Q238 50 238 42 L238 16"/>
+        </g>
+      </svg>
+    </a>
+    <ul class="nav" id="nav">
+      <li><a href="#halo">HALO</a></li>
+      <li><a href="#approach">Approach</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#research">Research</a></li>
+      <li><a href="#company">Company</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="top-actions">
+      <a class="btn btn-primary btn-sm" href="mailto:zero@unskild.ai?subject=HALO%20pre-order">Pre-order HALO</a>
+      <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="nav">Menu</button>
     </div>
   </div>
-</section>
+</header>
 
-<!-- ═══ WHAT WE DO ═══ -->
-<section id="what">
-  <div class="wrap">
-    <div class="what-hdr">
-      <div class="eyebrow reveal" style="justify-content:center">What We Build</div>
-      <h2 class="sh2 reveal" style="text-align:center;max-width:680px;margin:0 auto 1rem">One Architecture.<br><span class="t">Any Robot. Any Task.</span></h2>
-      <p class="sp reveal" style="text-align:center;margin:0 auto">Cognitive software that gives humanoid robots a universal understanding of physical reality — not a library of memorized actions, but genuine comprehension of how the world works.</p>
-    </div>
-    <div class="wgrid">
-      <div class="wcard reveal">
-        <div class="wc-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
-        <div class="wc-t">Physics-First Intelligence</div>
-        <div class="wc-d">Train on gravity, friction, and material properties — not task demonstrations. When a robot understands why objects behave as they do, it can manipulate anything it has never seen before.</div>
-      </div>
-      <div class="wcard reveal d1">
-        <div class="wc-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
-        <div class="wc-t">Universal Body Compatibility</div>
-        <div class="wc-d">One cognitive layer that adapts to any humanoid form factor. OEMs integrate our software regardless of their hardware design, joint configuration, or sensor suite.</div>
-      </div>
-      <div class="wcard reveal d2">
-        <div class="wc-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
-        <div class="wc-t">Data Flywheel Advantage</div>
-        <div class="wc-d">Every deployed robot feeds real-world experience back into the model. More deployments means smarter AI means more deployments. A compounding advantage that widens with every unit.</div>
-      </div>
-      <div class="wfeat reveal">
-        <div class="wf-l">
-          <div class="eyebrow" style="margin-bottom:1rem">Core Difference</div>
-          <h3 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:-.03em;color:var(--white);margin-bottom:.8rem;line-height:1.2">Two Paradigms.<br><span style="color:var(--teal)">One Winner.</span></h3>
-          <p style="font-size:.87rem;color:var(--dim);line-height:1.65;font-weight:300;margin-bottom:1.5rem">Teaching a robot "pick up cup" means it fails on glasses, bowls, anything outside training. Teaching it gravity, friction, and material properties — manipulation of any object emerges naturally.</p>
-          <div style="display:flex;gap:.8rem;flex-wrap:wrap">
-            <div style="padding:.5rem 1rem;background:var(--teal-dim);border:1px solid var(--border-t);border-radius:6px;font-size:.75rem;font-weight:600;color:var(--teal)">Understands WHY</div>
-            <div style="padding:.5rem 1rem;background:var(--raised);border:1px solid var(--border);border-radius:6px;font-size:.75rem;font-weight:500;color:var(--muted)">Not just WHAT</div>
-          </div>
-        </div>
-        <div class="wf-r">
-          <div class="pcomp">
-            <div class="prow" style="background:var(--raised)">
-              <div class="plabel"></div>
-              <div class="ph old">Others — Task AI</div>
-              <div class="ph new">Unskild AI</div>
-            </div>
-            <div class="prow">
-              <div class="plabel">Trains on</div>
-              <div class="pcell old">"Fold towel. Pick cup." — Task demos</div>
-              <div class="pcell new"><div class="ptag">Physics</div><br>Friction. Gravity. Deformation.</div>
-            </div>
-            <div class="prow" style="background:rgba(255,255,255,.01)">
-              <div class="plabel">Result</div>
-              <div class="pcell old">Fails outside training distribution</div>
-              <div class="pcell new"><div class="ptag">Adaptive</div><br>Handles any novel scenario</div>
-            </div>
-            <div class="prow">
-              <div class="plabel">Moat</div>
-              <div class="pcell old">Data volume — copyable</div>
-              <div class="pcell new"><div class="ptag">Deep</div><br>Comprehension — not copyable</div>
-            </div>
-            <div class="prow" style="background:rgba(255,255,255,.01)">
-              <div class="plabel">Analogy</div>
-              <div class="pcell old">Expert: knows what to do</div>
-              <div class="pcell new"><div class="ptag">Natural</div><br>Child: understands the world</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+<main id="top">
 
-<!-- ═══ RECOGNITION ═══ -->
-<section id="recognition">
-  <div class="wrap">
-    <div class="rec-hdr">
-      <div class="eyebrow reveal" style="justify-content:center">Validation</div>
-      <h2 class="sh2 reveal" style="text-align:center">Recognized by the<br><span class="t">Builders of the Future</span></h2>
-      <p class="sp reveal" style="text-align:center;margin:0 auto">Early-stage but far from unknown. Validated by the organizations at the frontier of physical AI and robotics globally.</p>
-    </div>
-    <div class="rec-grid">
-      <div class="rcard reveal">
-        <div class="rico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="12" cy="10" r="3"/></svg></div>
+  <section class="sheet hero">
+    <div class="wrap stack-lg">
+      <div class="sheet-head mono"><span>Sheet 01 / 07</span><span class="rule"></span><span>Unskild Robotics · Pune, India</span></div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>Robots that understand the physical world before they act in it.</h1>
+          <p class="lead">Unskild builds physics-first robots. The first is HALO, a front desk robot designed, built and assembled in India, open for pre-order now. The destination is a general-purpose humanoid.</p>
+          <div class="cta">
+            <a class="btn btn-primary" href="mailto:zero@unskild.ai?subject=HALO%20pre-order">Pre-order HALO</a>
+            <a class="btn" href="#approach">How it thinks</a>
+          </div>
+          <ul class="status mono">
+            <li>Incorporated 28 Jan 2026</li>
+            <li>First unit built in three months</li>
+            <li><span class="led" aria-hidden="true"></span>Pre-orders open</li>
+            <li>Pre-seed round open</li>
+          </ul>
+        </div>
         <div>
-          <div class="rbadge"><svg width="6" height="6" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg>Official Member</div>
-          <div class="rt">NVIDIA Inception Program</div>
-          <div class="rd">Selected for NVIDIA's elite program for AI companies shaping the future of physical intelligence. Access to deep learning infrastructure, developer toolkits, and the full NVIDIA ecosystem to accelerate our physics-first training architecture at scale.</div>
-        </div>
-      </div>
-      <div class="rcard reveal d1">
-        <div class="rico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
-        <div>
-          <div class="rbadge"><svg width="6" height="6" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg>Exclusive Invitation</div>
-          <div class="rt">Mass Robotics In-House Development</div>
-          <div class="rd">Invited by Mass Robotics — one of the world's premier robotics innovation hubs — for in-house development collaboration. Recognition that our cognitive architecture represents frontier work in embodied AI worthy of dedicated access and resources.</div>
-        </div>
-      </div>
-      <div class="rcard reveal d2">
-        <div class="rico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
-        <div>
-          <div class="rbadge"><svg width="6" height="6" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg>Published Research</div>
-          <div class="rt">Embodied AI Research Contributions</div>
-          <div class="rd">Published research and international conference presentations in embodied AI — establishing credibility across simulation-to-real transfer, world models, and foundation model architectures. The academic frontier validates our thesis.</div>
-        </div>
-      </div>
-      <div class="rcard reveal d3">
-        <div class="rico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <div>
-          <div class="rbadge"><svg width="6" height="6" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg>Proven Track Record</div>
-          <div class="rt">20+ Years Enterprise AI Deployment</div>
-          <div class="rd">The rarest combination: research-grade depth paired with Fortune 500 production experience. We don't just know what to build — we know how to make it survive contact with reality at enterprise scale.</div>
-        </div>
-      </div>
-    </div>
-    <div class="rstats reveal">
-      <div class="rsc"><div class="rsn">2<em>+</em></div><div class="rsl">Global Program<br>Recognitions</div></div>
-      <div class="rsc"><div class="rsn">20<em>+</em></div><div class="rsl">Years Enterprise AI<br>at Scale</div></div>
-      <div class="rsc"><div class="rsn">3<em>×</em></div><div class="rsl">Compounding<br>Moats Built In</div></div>
-      <div class="rsc"><div class="rsn">∞</div><div class="rsl">Scenarios a Physics<br>Model Handles</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ MARKET ═══ -->
-<section id="market">
-  <div class="wrap">
-    <div class="mkt-layout">
-      <div>
-        <div class="eyebrow reveal">The Opportunity</div>
-        <h2 class="sh2 reveal">A $5 Trillion<br><span class="t">Ecosystem.</span><br><span class="m">Not a Race.</span></h2>
-        <p class="sp reveal">Physical AI will fragment exactly like language AI. GPT, Claude, and Gemini all thrive simultaneously. The humanoid economy will have multiple essential cognitive platforms — we're building to be among them.</p>
-        <div class="mthesis">
-          <div class="mti reveal d1">
-            <div class="mt-n">01</div>
-            <div>
-              <div class="mt-t">The Multi-Winner Reality</div>
-              <div class="mt-d">In a $5T ecosystem, even 1% market capture represents $50 billion in annual revenue. We're not building to monopolize — we're building to matter.</div>
+          <figure class="fig" style="margin:0">
+            <div class="fig-head mono"><span>Fig. 01 · Free-body diagram</span><span>m 1.0 kg · g 9.81 m/s² · μs 0.40 · μk 0.30</span></div>
+            <canvas id="fbd" aria-label="A block resting on an incline whose angle slowly changes, with the weight, normal and friction forces drawn as vectors. The block holds until the incline steepens past the friction limit, then slides."></canvas>
+            <div class="fig-foot mono">
+              <span>θ <b id="ro-theta">18.0°</b></span>
+              <span>N <b id="ro-n">9.33 N</b></span>
+              <span>f <b id="ro-f">3.03 N</b></span>
+              <span>a <b id="ro-a">0.00 m/s²</b></span>
+              <span><b id="ro-state">Holding</b></span>
             </div>
-          </div>
-          <div class="mti reveal d2">
-            <div class="mt-n">02</div>
-            <div>
-              <div class="mt-t">Software Compounds, Hardware Commoditizes</div>
-              <div class="mt-d">Whoever builds the cognitive platform for humanoid robots owns the highest-margin, most defensible position in the entire physical AI value chain.</div>
-            </div>
-          </div>
-          <div class="mti reveal d3">
-            <div class="mt-n">03</div>
-            <div>
-              <div class="mt-t">The Timing Is Precise</div>
-              <div class="mt-d">Foundation models proved general AI works. Simulation enables massive training. Hardware hit mass-market price. The window to build the essential cognitive layer is right now.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="mnums reveal">
-        <div class="mcard">
-          <div class="ml">Total Market 2050</div>
-          <div class="mn">$5<em>T</em></div>
-          <div class="md">Physical AI ecosystem across hardware, software, and services globally.</div>
-          <div class="ms">Morgan Stanley</div>
-        </div>
-        <div class="mcard">
-          <div class="ml">Humanoids by 2050</div>
-          <div class="mn">1<em>B</em></div>
-          <div class="md">One billion humanoid units in active service across all sectors.</div>
-          <div class="ms">Morgan Stanley</div>
-        </div>
-        <div class="mcard">
-          <div class="ml">Humanoid Market 2035</div>
-          <div class="mn">$38<em>B</em></div>
-          <div class="md">Near-term milestone driven by labor shortage and hardware adoption.</div>
-          <div class="ms">Goldman Sachs</div>
-        </div>
-        <div class="mcard">
-          <div class="ml">Hardware Cost Floor</div>
-          <div class="mn">&lt;$100<em>K</em></div>
-          <div class="md">Full humanoid units available sub-$100K. The brain is the bottleneck.</div>
-          <div class="ms">Unitree Robotics</div>
+          </figure>
+          <p class="fig-note">A robot that reasons about forces knows when a thing will hold and when it will slip. That reasoning is the layer Unskild adds between what a robot perceives and what it does.</p>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ═══ PARTNERSHIP ═══ -->
-<section id="partner">
+  <section class="sheet" id="halo">
+    <div class="wrap stack-lg">
+      <div class="sheet-head mono"><span>Sheet 02 / 07</span><span class="rule"></span><span>Product</span></div>
+      <div class="stack">
+        <h2>Meet HALO, the front desk robot.</h2>
+        <p class="lead">HALO sits at reception and takes the questions a front desk hears a hundred times a day. It greets visitors as they approach, answers from your building's own knowledge, lets the host know, and hands over to a person whenever it should. Your team keeps the visitors who need them.</p>
+      </div>
+      <div class="caps">
+        <div class="cap"><span class="n mono">01</span><b>Perceives</b><p>It tracks people in the lobby as anonymous shapes from the moment they approach, and it knows whether someone is speaking to it or to the person beside them. No faces are recognised or stored.</p></div>
+        <div class="cap"><span class="n mono">02</span><b>Understands</b><p>English, Hindi, Marathi, Tamil, Japanese and Czech. It follows interruptions, and it follows a language switched mid sentence. Names, times and intent.</p></div>
+        <div class="cap"><span class="n mono">03</span><b>Acts</b><p>It checks the visitor in, messages the host on Teams, Slack, WhatsApp or email, alerts the right team, issues a guest pass and logs the visit.</p></div>
+        <div class="cap"><span class="n mono">04</span><b>Knows its limits</b><p>When it cannot help, it says so and brings in a person, with a summary of the conversation so far.</p></div>
+      </div>
+      <div class="where">
+        <span class="mono" style="border:0;padding:0;color:var(--muted)">Works in</span>
+        <span>Offices</span><span>Hospitals</span><span>Hotels</span><span>Co-working spaces</span><span>Colleges</span>
+        <span style="border:0;padding:0;color:var(--muted)">and anywhere someone at a desk asks how they can help.</span>
+      </div>
+      <div class="halo-grid">
+        <div class="stack">
+          <h3>HALO Standard</h3>
+          <dl class="spec">
+            <div><dt class="mono">Form</dt><dd>Stationary desk unit. Nothing to navigate, few parts to wear.</dd></div>
+            <div><dt class="mono">Perception</dt><dd>Camera and far-field microphones. People are tracked as anonymous shapes.</dd></div>
+            <div><dt class="mono">Conversation</dt><dd>Natural, interruptible speech. A conversation can start from either side, with any question.</dd></div>
+            <div><dt class="mono">Site knowledge</dt><dd>Floors, rooms, teams, policies and frequently asked questions, loaded at setup.</dd></div>
+            <div><dt class="mono">Connectors</dt><dd>Microsoft Teams, Slack, WhatsApp and email, for host notifications and alerts.</dd></div>
+            <div><dt class="mono">Privacy</dt><dd>No face recognition. Processing on the device wherever possible. Visitor data stays with you, in India, in line with the Digital Personal Data Protection rules.</dd></div>
+            <div><dt class="mono">Build</dt><dd>Designed, built and assembled in Pune, India. The first unit went from sketch to working robot in three months.</dd></div>
+            <div><dt class="mono">Software</dt><dd>Updates over the air. Twelve months of updates and support included.</dd></div>
+          </dl>
+        </div>
+        <div class="aside">
+          <div class="panel is-accent">
+            <h3>Pre-orders are open.</h3>
+            <ul>
+              <li>HALO Standard at an introductory pre-order price. Quote by email.</li>
+              <li>Installation and site knowledge setup included.</li>
+              <li>Twelve months of software updates and support included.</li>
+              <li>A deposit reserves your unit. Units are allotted in booking order.</li>
+              <li>Priority access and upgrade pricing on every robot that follows.</li>
+              <li>A monthly Robot-as-a-Service lease is available in place of purchase.</li>
+            </ul>
+            <div><a class="btn btn-primary" href="mailto:zero@unskild.ai?subject=HALO%20pre-order">Reserve a HALO</a></div>
+            <p class="small">Or write to zero@unskild.ai with your site and the number of units.</p>
+          </div>
+          <div class="panel">
+            <h3>HALO Edu</h3>
+            <p style="color:var(--muted);font-size:.95rem">The same robot, for classrooms and STEM labs. A quiz master for science and maths, a language partner, a coding project for older students and a receptionist for parents. We are selecting a small group of partner schools for an early pilot.</p>
+            <div><a class="link" href="mailto:zero@unskild.ai?subject=HALO%20Edu%20pilot">Propose a school pilot</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="stack">
+        <h3>Questions we get</h3>
+        <div class="faq">
+          <details>
+            <summary>It does not move. Why?</summary>
+            <p>By design. At a front desk the value is in perception, conversation and action. A stationary unit has no fall risk, runs all day and costs less. Mobility arrives further up the ladder, on the same stack.</p>
+          </details>
+          <details>
+            <summary>Is this a voice assistant in a shell?</summary>
+            <p>A voice assistant answers questions. HALO perceives who is in front of it, knows when it is being addressed, answers from your site's own knowledge and acts inside your systems, such as messaging a host or checking a visitor in.</p>
+          </details>
+          <details>
+            <summary>A camera at reception. What about privacy?</summary>
+            <p>HALO is face-free by default. It detects that a person is present without identifying who. Anything personal needs consent, processing happens on the device wherever possible, and visitor data stays with you, in India.</p>
+          </details>
+          <details>
+            <summary>Will it replace the receptionist?</summary>
+            <p>No. HALO takes the repetitive questions so the front desk team can look after the visitors who need a person. Every deployment includes a human handoff.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="approach">
+    <div class="wrap stack-lg">
+      <div class="sheet-head mono"><span>Sheet 03 / 07</span><span class="rule"></span><span>Approach</span></div>
+      <div class="stack">
+        <h2>Physics sits between perception and action.</h2>
+        <div class="prose">
+          <p>Most robot learning today maps what a machine sees and hears directly to movement. The model is trained on demonstrations of particular tasks, so it is skilled at those tasks and brittle at their edges. A new object, a new surface or a new grip is outside the data, and the behaviour falls apart.</p>
+          <p>Unskild adds the missing layer. Our Vision-Language-Physics-Action architecture, VL-Physics-A, places physical reasoning between perception and action, so a robot's behaviour is grounded in how objects, forces and contact actually behave. A robot that understands why a cup slides can hold a glass it has never seen.</p>
+        </div>
+      </div>
+      <div class="pipe" aria-label="The VL-Physics-A pipeline">
+        <div class="stage"><span class="k mono">V</span><b>Vision</b><span class="d">What it sees.</span></div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="stage"><span class="k mono">L</span><b>Language</b><span class="d">What it is asked.</span></div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="stage is-physics"><span class="k mono">P</span><b>Physics</b><span class="d">How objects, forces and contact behave.</span><em class="mono">The layer Unskild adds</em></div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="stage"><span class="k mono">A</span><b>Action</b><span class="d">What it does.</span></div>
+      </div>
+      <div class="stack">
+        <h3>Two tracks, one destination.</h3>
+        <div class="tracks">
+          <div class="track">
+            <span class="k mono">Top-down</span>
+            <p>Research into the VL-Physics-A architecture. Fine-tuning experiments on NVIDIA GR00T N1.7, and manipulation built up from the simplest task on SO-ARM 101 arms, on a Jetson AGX Thor with 128 GB of unified memory.</p>
+            <div class="kit"><span>GR00T N1.7</span><span>SO-ARM 101</span><span>Jetson AGX Thor</span><span>LeRobot</span></div>
+          </div>
+          <div class="track">
+            <span class="k mono">Bottom-up</span>
+            <p>Ship a useful robot now, then the next, then the next. HALO is the first. Each robot earns its place in a workplace and teaches the one after it.</p>
+            <div class="kit"><span>HALO</span><span>HALO Edu</span><span>Pre-orders open</span></div>
+          </div>
+        </div>
+        <p class="lead">The two tracks meet in the middle. That is where the humanoid lives.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="roadmap">
+    <div class="wrap stack-lg">
+      <div class="sheet-head mono"><span>Sheet 04 / 07</span><span class="rule"></span><span>Roadmap</span></div>
+      <div class="stack">
+        <h2>From the front desk to a humanoid, one body at a time.</h2>
+        <p class="lead">Every robot on the ladder runs the same stack. Your site knowledge, connectors and settings carry over from one to the next, and pre-order customers get priority access and upgrade pricing at each step.</p>
+      </div>
+      <ol class="ladder">
+        <li class="rung is-now" style="--i:0"><span class="n mono">01</span><b>HALO</b><p>Stationary front desk. Sees, hears, talks.</p><em>Available now</em></li>
+        <li class="rung" style="--i:1"><span class="n mono">02</span><b>Full-room vision</b><p>A head that turns. Notices who needs help.</p></li>
+        <li class="rung" style="--i:2"><span class="n mono">03</span><b>Mobility</b><p>Leaves the desk, on wheels.</p></li>
+        <li class="rung" style="--i:3"><span class="n mono">04</span><b>One arm</b><p>Picks things up. Puts them down.</p></li>
+        <li class="rung" style="--i:4"><span class="n mono">05</span><b>Two arms</b><p>Both hands at once.</p></li>
+        <li class="rung" style="--i:5"><span class="n mono">06</span><b>Walking</b><p>On its own two feet.</p></li>
+        <li class="rung" style="--i:6"><span class="n mono">07</span><b>Humanoid</b><p>General purpose. Any task.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sheet" id="research">
+    <div class="wrap stack-lg">
+      <div class="sheet-head mono"><span>Sheet 05 / 07</span><span class="rule"></span><span>Research</span></div>
+      <div class="stack">
+        <h2>Six papers on humanoid robotics.</h2>
+        <p class="lead">A whitepaper series for technical leadership and investors, prepared by Sachin Panicker. Each paper surveys the field as it stands, then makes the case for the physics-first conclusion.</p>
+      </div>
+      <ol class="papers">
+        <li><span class="n mono">01</span><div><b>The physics gap in vision-language-action models</b><span class="d">Why models that map perception straight to action break at the edge of their data.</span></div><a href="mailto:zero@unskild.ai?subject=Whitepaper%2001%20request">Request</a></li>
+        <li><span class="n mono">02</span><div><b>The data problem</b><span class="d">How much demonstration data general manipulation needs, and where it would come from.</span></div><a href="mailto:zero@unskild.ai?subject=Whitepaper%2002%20request">Request</a></li>
+        <li><span class="n mono">03</span><div><b>The hardware ceiling</b><span class="d">What current actuators, sensors and compute allow, and where the limits sit.</span></div><a href="mailto:zero@unskild.ai?subject=Whitepaper%2003%20request">Request</a></li>
+        <li><span class="n mono">04</span><div><b>Simulation and sim-to-real</b><span class="d">What simulation can train, and what survives the transfer to a real body.</span></div><a href="mailto:zero@unskild.ai?subject=Whitepaper%2004%20request">Request</a></li>
+        <li><span class="n mono">05</span><div><b>Safety and standards</b><span class="d">Which standards apply to a robot among people, and what they leave open.</span></div><a href="mailto:zero@unskild.ai?subject=Whitepaper%2005%20request">Request</a></li>
+        <li><span class="n mono">06</span><div><b>Deployment economics</b><span class="d">What a deployed humanoid has to earn, and the cost lines that decide it.</span></div><a href="mailto:zero@unskild.ai?subject=Whitepaper%2006%20request">Request</a></li>
+      </ol>
+      <p class="lead" style="font-size:1rem">Papers are released as they are ready. Request any of them by email and we will send it the day it is out.</p>
+    </div>
+  </section>
+
+  <section class="sheet" id="company">
+    <div class="wrap stack-lg">
+      <div class="sheet-head mono"><span>Sheet 06 / 07</span><span class="rule"></span><span>Company</span></div>
+      <div class="company">
+        <div class="stack">
+          <h2>The name comes from shoshin.</h2>
+          <div class="prose">
+            <p>Shoshin is the beginner's mind of Zen practice. A skilled robot has been trained on particular tasks and is lost outside them. An unskilled one starts from an understanding of the world and learns each task from first principles. We named the company after the second kind.</p>
+            <p>In the wordmark, the N and the I stand taller than the other letters. Read together, they are the AI inside Unskild.</p>
+          </div>
+          <div class="mark" aria-hidden="true">
+            <svg viewBox="-2 -2 279 54">
+              <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 8 L2 38 Q2 50 14 50 L18 50 Q30 50 30 38 L30 8"/>
+                <path class="ai" d="M48 50 L48 12 Q48 0 60 0 L66 0 Q78 0 78 12 L78 50"/>
+                <path d="M126 16 Q126 8 116 8 L106 8 Q96 8 96 18 Q96 28 106 28 L116 28 Q126 28 126 38 Q126 50 116 50 L106 50 Q96 50 96 42"/>
+                <path d="M144 8 L144 50"/>
+                <path d="M164 8 L148 22 Q140 29 148 36 L164 50"/>
+                <path class="ai" d="M182 0 L182 50"/>
+                <path d="M200 8 L200 42 Q200 50 208 50 L220 50"/>
+                <path d="M238 16 Q238 8 246 8 L253 8 Q273 8 273 29 Q273 50 253 50 L246 50 Q238 50 238 42 L238 16"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="panel founder">
+            <span class="mono" style="color:var(--muted)">Founder</span>
+            <b>Sachin Panicker</b>
+            <p>A linguist by training, with research in multimodal pragmatics across Japanese, English and Czech, presented at Charles University in Prague and at the United Nations. Two decades in enterprise AI, now as Chief AI Officer of a global technology firm, where he leads a thirty-strong team building an enterprise agentic AI platform. He designed and built the first HALO himself.</p>
+          </div>
+          <dl class="facts">
+            <div><dt class="mono">Company</dt><dd>Unskild Robotics Private Limited</dd></div>
+            <div><dt class="mono">Incorporated</dt><dd>28 January 2026</dd></div>
+            <div><dt class="mono">Registered</dt><dd>Pune, Maharashtra, India</dd></div>
+            <div><dt class="mono">Funding</dt><dd>Founder-financed. Pre-seed round open.</dd></div>
+            <div><dt class="mono">Programmes</dt><dd>NVIDIA Inception Program member</dd></div>
+          </dl>
+        </div>
+      </div>
+      <div class="stack">
+        <h3>Who we work with</h3>
+        <div class="who">
+          <div><b>Buyers</b><p>Pilots and pre-orders for offices, hospitals, hotels, co-working spaces and campuses.</p><a class="link" href="mailto:zero@unskild.ai?subject=HALO%20pilot">Start a pilot</a></div>
+          <div><b>Partners</b><p>Hardware partners, deployment partners and white-label resale of HALO.</p><a class="link" href="mailto:zero@unskild.ai?subject=Partnership">Partner with us</a></div>
+          <div><b>Investors</b><p>Pre-seed round open. The investor brief and the whitepaper series are available on request.</p><a class="link" href="mailto:zero@unskild.ai?subject=Pre-seed%20round">Request the brief</a></div>
+          <div><b>Schools</b><p>Early pilots of HALO Edu with a small group of partner schools and STEM labs.</p><a class="link" href="mailto:zero@unskild.ai?subject=HALO%20Edu%20pilot">Propose a pilot</a></div>
+          <div><b>Talent</b><p>Engineers and interns. Write to us with what you have built.</p><a class="link" href="mailto:zero@unskild.ai?subject=Joining%20Unskild">Introduce yourself</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="contact">
+    <div class="wrap stack-lg">
+      <div class="sheet-head mono"><span>Sheet 07 / 07</span><span class="rule"></span><span>Contact</span></div>
+      <div class="contact-grid">
+        <div class="stack">
+          <h2>Write to us.</h2>
+          <div class="email-row">
+            <span class="email" id="email">zero@unskild.ai</span>
+            <button class="btn btn-sm" type="button" id="copy-email" data-copy="zero@unskild.ai" data-target="email">Copy address</button>
+          </div>
+          <p class="lead" style="font-size:1rem">One address for everything. Put what it is about in the subject line and the right person reads it.</p>
+          <div class="chips">
+            <a href="mailto:zero@unskild.ai?subject=HALO%20pre-order">Pre-order</a>
+            <a href="mailto:zero@unskild.ai?subject=HALO%20pilot">Pilot</a>
+            <a href="mailto:zero@unskild.ai?subject=Partnership">Partnership</a>
+            <a href="mailto:zero@unskild.ai?subject=Pre-seed%20round">Investment</a>
+            <a href="mailto:zero@unskild.ai?subject=Press">Press</a>
+            <a href="mailto:zero@unskild.ai?subject=HALO%20Edu%20pilot">School pilot</a>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="socials">
+            <a href="https://in.linkedin.com/in/unskild-ai-7a96503a1" target="_blank" rel="noopener"><span class="k mono">LinkedIn</span><span class="v">Unskild AI ↗</span></a>
+            <a href="https://www.instagram.com/unskild.ai/" target="_blank" rel="noopener"><span class="k mono">Instagram</span><span class="v">@unskild.ai ↗</span></a>
+          </div>
+          <p style="color:var(--muted);font-size:.95rem">Daily films from the HALO build are on LinkedIn. Visitors who want to see every layer of the robot running are welcome in Pune.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
   <div class="wrap">
-    <div class="part-intro">
-      <div>
-        <div class="eyebrow reveal">Collaborate</div>
-        <h2 class="sh2 reveal">Manufacturers Build<br>the Body. <span class="t">We Build<br>the Mind.</span></h2>
-        <p class="sp reveal">Seeking hardware partners to accelerate real-world testing and validation of our cognitive platform. Win-win by design — you get world-class AI, we get physical validation at scale.</p>
-      </div>
-      <div class="reveal d1" style="padding:2rem 2.5rem;border:1px solid var(--border-t);border-radius:14px;background:rgba(79,142,247,.04);">
-        <div style="font-size:.72rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);margin-bottom:1rem">Why Partner With Us</div>
-        <div style="font-size:.95rem;font-weight:300;color:var(--dim);line-height:1.7;margin-bottom:1.5rem">We bring world-class cognitive AI to your hardware. You bring the robot. Together we build a platform greater than the sum of its parts — and capture a market neither of us can fully address alone.</div>
-        <a href="#contact" class="btn-p" style="font-size:.84rem;padding:.75rem 1.5rem">Start a Conversation <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-      </div>
+    <a class="brand" href="#top" aria-label="Unskild">
+      <svg viewBox="-2 -2 279 54" role="img" aria-label="Unskild">
+        <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 8 L2 38 Q2 50 14 50 L18 50 Q30 50 30 38 L30 8"/>
+          <path d="M48 50 L48 12 Q48 0 60 0 L66 0 Q78 0 78 12 L78 50"/>
+          <path d="M126 16 Q126 8 116 8 L106 8 Q96 8 96 18 Q96 28 106 28 L116 28 Q126 28 126 38 Q126 50 116 50 L106 50 Q96 50 96 42"/>
+          <path d="M144 8 L144 50"/>
+          <path d="M164 8 L148 22 Q140 29 148 36 L164 50"/>
+          <path d="M182 0 L182 50"/>
+          <path d="M200 8 L200 42 Q200 50 208 50 L220 50"/>
+          <path d="M238 16 Q238 8 246 8 L253 8 Q273 8 273 29 Q273 50 253 50 L246 50 Q238 50 238 42 L238 16"/>
+        </g>
+      </svg>
+    </a>
+    <div class="legal">
+      <span>Unskild Robotics Private Limited</span>
+      <span>CIN U62099PN2026PTC251332</span>
+      <span>Pune, Maharashtra, India</span>
+      <span>Designed, built and assembled in India</span>
+      <span>© 2026</span>
     </div>
-    <div class="pcards">
-      <div class="pc reveal">
-        <div class="pctag">Option A</div>
-        <div class="pct">Hardware Loan Partnership</div>
-        <div class="pcd">The fastest path to proof. Partner provides robot units, we integrate and return results — with joint marketing on every success story.</div>
-        <ul class="pcl">
-          <li>1–2 robot units for development</li>
-          <li>Cognitive layer integration by Unskild</li>
-          <li>Full results shared with partner</li>
-          <li>Joint PR on successful demonstrations</li>
-        </ul>
-      </div>
-      <div class="pc reveal d1">
-        <div class="pctag">Option B</div>
-        <div class="pct">Co-Development Partnership</div>
-        <div class="pcd">Build together, share the upside. Joint development of an integrated hardware-software solution with revenue sharing on commercial deployments.</div>
-        <ul class="pcl">
-          <li>Joint R&D roadmap alignment</li>
-          <li>Revenue sharing on deployments</li>
-          <li>Exclusive or non-exclusive licensing</li>
-          <li>Co-branded enterprise offering</li>
-        </ul>
-      </div>
-      <div class="pc reveal d2">
-        <div class="pctag">Option C</div>
-        <div class="pct">OEM / White-Label</div>
-        <div class="pcd">The most scalable model. Manufacture robots pre-loaded with Unskild AI cognitive software — intelligence built in from day one, at scale.</div>
-        <ul class="pcl">
-          <li>Robots ship with software pre-installed</li>
-          <li>Per-unit licensing or royalty model</li>
-          <li>Ongoing model improvements included</li>
-          <li>Competitive global price point</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ VISION ═══ -->
-<section id="vision">
-  <div class="vglow"></div>
-  <div class="wrap" style="text-align:center">
-    <div class="veyebrow reveal" style="justify-content:center">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      2025 → 2035 → Beyond
-    </div>
-    <h2 class="vh2 reveal">
-      <span class="vl1">the physical economy needs</span>
-      <span class="vl2">A Cognitive</span>
-      <span class="vl3">Foundation</span>
-    </h2>
-    <p class="vbody reveal">Not the only platform. One of 5–10 essential cognitive architectures that will define the humanoid economy — the way multiple LLMs define language AI today. We are building to be among the indispensable ones.</p>
-    <div class="reveal"><a href="#contact" class="btn-p" style="display:inline-flex">Join the Ecosystem <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a></div>
-    <div class="vpills reveal" style="margin-top:4rem">
-      <div class="vp">
-        <div class="vpn">01</div>
-        <div class="vpt">Data Network Effects</div>
-        <div class="vpd">Every robot deployed feeds real-world experience back into the model. More deployments → smarter AI → more deployments. A compounding advantage that competitors can't replicate from scratch.</div>
-      </div>
-      <div class="vp">
-        <div class="vpn">02</div>
-        <div class="vpt">Deep Switching Cost Moat</div>
-        <div class="vpd">Once OEMs integrate our cognitive layer into their hardware design and manufacturing pipeline, rearchitecting is prohibitively expensive. Integration depth creates durable, long-term loyalty.</div>
-      </div>
-      <div class="vp">
-        <div class="vpn">03</div>
-        <div class="vpt">Architectural Advantage</div>
-        <div class="vpd">Physics-first training creates capabilities that task-specific approaches cannot replicate regardless of compute or data scale. You can copy code. You cannot copy comprehension of physical reality.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ CONTACT ═══ -->
-<section id="contact">
-  <div class="wrap">
-    <div class="cta-box">
-      <div class="cta-glow"></div>
-      <div>
-        <h2 class="cta-h2 reveal">Ready to build the<br>future of <em>physical<br>intelligence</em>?</h2>
-        <p class="cta-sub reveal">Whether you're a robot manufacturer, enterprise buyer, or investor — the physical economy is being built right now. Let's build it together.</p>
-        <div style="display:flex;gap:1.5rem;margin-top:2rem;flex-wrap:wrap">
-          <div>
-            <div style="font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">LinkedIn</div>
-            <a href="https://in.linkedin.com/in/unskild-ai-7a96503a1" target="_blank" style="font-size:.85rem;color:var(--teal);text-decoration:none">Unskild AI ↗</a>
-          </div>
-          <div>
-            <div style="font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Instagram</div>
-            <a href="https://www.instagram.com/unskild.ai/" target="_blank" style="font-size:.85rem;color:var(--teal);text-decoration:none">@unskild.ai ↗</a>
-          </div>
-          <div>
-            <div style="font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem">Website</div>
-            <a href="https://www.unskild.ai/" target="_blank" style="font-size:.85rem;color:var(--teal);text-decoration:none">unskild.ai ↗</a>
-          </div>
-        </div>
-      </div>
-      <div class="reveal d1">
-        <div class="ctabs" id="ctabs">
-          <button class="ctab on" data-r="manufacturer">Hardware Partner</button>
-          <button class="ctab" data-r="investor">Investor</button>
-          <button class="ctab" data-r="enterprise">Enterprise</button>
-          <button class="ctab" data-r="press">Press</button>
-        </div>
-        <div class="cform">
-          <input class="cinput" type="text" placeholder="Your name">
-          <input class="cinput" type="email" placeholder="Email address">
-          <input class="cinput" type="text" placeholder="Company / Organization">
-          <textarea class="cinput" id="ctaMsg" rows="3" style="resize:none" placeholder="Tell us about your interest in partnering..."></textarea>
-          <button onclick="handleSubmit(event)" class="btn-p" style="justify-content:center;width:100%;border:none">
-            Send Message <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ FOOTER ═══ -->
-<footer>
-  <div class="ft">
-    <div>
-      <a href="#" class="logo-wrap" style="margin-bottom:1rem;display:inline-flex"><span class="logo-text">Unskild AI</span></a>
-      <p class="ftagline">Universal cognitive software for humanoid robots. One architecture. Any body. Any task. Built on physics, not procedures.</p>
-      <div class="fsocials">
-        <a href="https://in.linkedin.com/in/unskild-ai-7a96503a1" target="_blank" class="fsoc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-        <a href="https://www.instagram.com/unskild.ai/" target="_blank" class="fsoc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg></a>
-        <a href="https://www.unskild.ai/" target="_blank" class="fsoc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
-      </div>
-    </div>
-    <div>
-      <div class="fch">Company</div>
-      <ul class="flinks"><li><a href="#what">What We Build</a></li><li><a href="#recognition">Recognition</a></li><li><a href="#market">Market</a></li><li><a href="#vision">Vision</a></li></ul>
-    </div>
-    <div>
-      <div class="fch">Partner</div>
-      <ul class="flinks"><li><a href="#partner">Hardware Loan</a></li><li><a href="#partner">Co-Development</a></li><li><a href="#partner">OEM Licensing</a></li><li><a href="#contact">Contact</a></li></ul>
-    </div>
-    <div>
-      <div class="fch">Ecosystem</div>
-      <ul class="flinks"><li><a href="#recognition">NVIDIA Inception</a></li><li><a href="#recognition">Mass Robotics</a></li><li><a href="#contact">Investors</a></li><li><a href="#contact">Press</a></li></ul>
-    </div>
-  </div>
-  <div class="fb">
-    <span class="fcopy">© 2026 Unskild AI — Universal Humanoid Intelligence</span>
-    <span class="floc"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>India — Building for the world</span>
   </div>
 </footer>
 
 <script>
-/* ─ Cursor ─ */
-const cur=document.getElementById('cur'),ring=document.getElementById('curRing');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.transform=`translate(${mx-5}px,${my-5}px)`;});
-(function loop(){rx+=(mx-rx)*.14;ry+=(my-ry)*.14;ring.style.transform=`translate(${rx-19}px,${ry-19}px)`;requestAnimationFrame(loop);})();
-document.querySelectorAll('a,button,.wcard,.rcard,.mcard,.pc,.mti,.pain-card').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{cur.style.transform+=` scale(2.2)`;ring.style.borderColor='rgba(79,142,247,.7)';});
-  el.addEventListener('mouseleave',()=>{cur.style.transform=`translate(${mx-5}px,${my-5}px)`;ring.style.borderColor='rgba(79,142,247,.35)';});
-});
-
-/* ─ Nav scroll ─ */
-window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('sc',scrollY>60));
-
-/* ─ Reveal ─ */
-new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');}),{threshold:.1})
-  .observe.call(new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');}),{threshold:.08}),(()=>{
-    const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');}),{threshold:.08});
-    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-    return document.body;
-  })());
-
-/* ─ CTA tabs ─ */
-const msgs={manufacturer:'Describe your hardware platform and partnership goals...',investor:'Tell us about your investment thesis and stage focus...',enterprise:'Describe your deployment use case and scale requirements...',press:'Tell us about your publication and story angle...'};
-document.querySelectorAll('.ctab').forEach(t=>{
-  t.addEventListener('click',()=>{
-    document.querySelectorAll('.ctab').forEach(x=>x.classList.remove('on'));
-    t.classList.add('on');
-    document.getElementById('ctaMsg').placeholder=msgs[t.dataset.r];
-  });
-});
-
-/* ─ Form ─ */
-function handleSubmit(e){
-  e.preventDefault();const b=e.target;
-  b.innerHTML='✓ Message received — we\'ll be in touch!';
-  b.style.background='#059669';b.style.boxShadow='0 4px 20px rgba(5,150,105,.4)';
-  setTimeout(()=>{b.innerHTML='Send Message <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.style.background='';b.style.boxShadow='';},4500);
-}
-
-/* ─ Canvas particles ─ */
-const cv=document.getElementById('bg-canvas'),cx2=cv.getContext('2d');
-let W,H,pts=[];
-function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
-resize();addEventListener('resize',resize);
-class P{constructor(){this.r();}r(){this.x=Math.random()*W;this.y=Math.random()*H;this.s=Math.random()*1.1+.3;this.vx=(Math.random()-.5)*.22;this.vy=(Math.random()-.5)*.22;this.a=Math.random()*.5+.1;this.t=Math.random()>.82;}
-  u(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W||this.y<0||this.y>H)this.r();}
-  d(){cx2.beginPath();cx2.arc(this.x,this.y,this.s,0,Math.PI*2);cx2.fillStyle=this.t?`rgba(79,142,247,${this.a})`:`rgba(240,238,238,${this.a*.35})`;cx2.fill();}}
-for(let i=0;i<140;i++)pts.push(new P());
-function draw(){
-  cx2.clearRect(0,0,W,H);
-  for(let i=0;i<pts.length;i++){
-    for(let j=i+1;j<pts.length;j++){
-      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
-      if(d<95){cx2.beginPath();cx2.moveTo(pts[i].x,pts[i].y);cx2.lineTo(pts[j].x,pts[j].y);cx2.strokeStyle=`rgba(79,142,247,${(1-d/95)*.055})`;cx2.lineWidth=.5;cx2.stroke();}
-    }
-    pts[i].u();pts[i].d();
+(function () {
+  /* Mobile menu */
+  var btn = document.getElementById('menu-btn');
+  var nav = document.getElementById('nav');
+  if (btn && nav) {
+    btn.addEventListener('click', function () {
+      var open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.textContent = open ? 'Close' : 'Menu';
+    });
+    nav.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A') { nav.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); btn.textContent = 'Menu'; }
+    });
   }
-  requestAnimationFrame(draw);
-}
-draw();
+
+  /* Copy address */
+  var copy = document.getElementById('copy-email');
+  if (copy) {
+    copy.addEventListener('click', function () {
+      var text = copy.getAttribute('data-copy');
+      var original = copy.textContent;
+      var done = function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = original; }, 1600); };
+      var fallback = function () {
+        var t = document.getElementById(copy.getAttribute('data-target'));
+        if (!t) return;
+        var r = document.createRange(); r.selectNodeContents(t);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      };
+      try { navigator.clipboard.writeText(text).then(done).catch(fallback); } catch (e) { fallback(); }
+    });
+  }
+
+  /* Fig. 01: block on an incline, drawn as a free-body diagram */
+  var canvas = document.getElementById('fbd');
+  if (!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext('2d');
+  var ro = {
+    theta: document.getElementById('ro-theta'), n: document.getElementById('ro-n'),
+    f: document.getElementById('ro-f'), a: document.getElementById('ro-a'), state: document.getElementById('ro-state')
+  };
+  var g = 9.81, m = 1.0, muS = 0.40, muK = 0.30, planeM = 1.20, blockM = 0.12;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var colors = {};
+  function readColors() {
+    var cs = getComputedStyle(document.documentElement);
+    var v = function (n) { return cs.getPropertyValue(n).trim(); };
+    colors = { ink: v('--accent'), fg: v('--fg'), muted: v('--muted'), line: v('--line'), fill: v('--line-soft'), bg: v('--surface') };
+  }
+  readColors();
+  try {
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function () { readColors(); draw(); });
+    new MutationObserver(function () { readColors(); draw(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  } catch (e) {}
+
+  var W = 0, H = 0, t = 0, theta = 18 * Math.PI / 180, d = 0.18, v = 0, sliding = false;
+  var cur = { N: m * g * Math.cos(theta), f: m * g * Math.sin(theta), a: 0, v: 0 };
+  var running = false, last = null;
+
+  function resize() {
+    var r = canvas.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+
+  function step(dt) {
+    t += dt;
+    var deg = 10 + 9 * (1 - Math.cos(2 * Math.PI * t / 18));
+    theta = deg * Math.PI / 180;
+    var cos = Math.cos(theta), sin = Math.sin(theta);
+    var N = m * g * cos, f, a = 0;
+    if (!sliding && Math.tan(theta) > muS) sliding = true;
+    if (sliding) {
+      f = muK * N; a = g * sin - muK * g * cos;
+      v += a * dt;
+      if (v <= 0) { v = 0; sliding = false; }
+    }
+    if (!sliding) { f = m * g * sin; a = 0; }
+    d += v * dt;
+    if (d > planeM - blockM - 0.02) { d = 0; v = 0; sliding = Math.tan(theta) > muS; }
+    cur = { N: N, f: f, a: a, v: v };
+  }
+
+  function stroke(c, w) { ctx.strokeStyle = c; ctx.lineWidth = w; }
+  function text(s, x, y, c, align) {
+    ctx.fillStyle = c; ctx.font = '500 11px "IBM Plex Mono", Menlo, Consolas, monospace';
+    ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y);
+  }
+  function arrow(x1, y1, x2, y2, c, label) {
+    var dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+    if (len < 2) return;
+    var ux = dx / len, uy = dy / len;
+    stroke(c, 1.4); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    var h = 7, w = 3.2;
+    ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - ux * h - uy * w, y2 - uy * h + ux * w);
+    ctx.lineTo(x2 - ux * h + uy * w, y2 - uy * h - ux * w);
+    ctx.closePath(); ctx.fill();
+    if (label) text(label, x2 + ux * 13, y2 + uy * 13, c);
+  }
+  function dim(x1, y1, x2, y2, label, c) {
+    stroke(c, 1); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    var dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1, px = -dy / len, py = dx / len;
+    ctx.beginPath();
+    ctx.moveTo(x1 - px * 5, y1 - py * 5); ctx.lineTo(x1 + px * 5, y1 + py * 5);
+    ctx.moveTo(x2 - px * 5, y2 - py * 5); ctx.lineTo(x2 + px * 5, y2 + py * 5);
+    ctx.stroke();
+    text(label, (x1 + x2) / 2 - 9, (y1 + y2) / 2, c, 'right');
+  }
+
+  function draw() {
+    if (!W || !H) return;
+    ctx.clearRect(0, 0, W, H);
+    var c = colors;
+    var y0 = Math.round(H * 0.83) + 0.5;
+    var Px = W * 0.88, Py = y0;
+    var L = W * 0.74, pxPerM = L / planeM;
+    var cos = Math.cos(theta), sin = Math.sin(theta);
+    var Tx = Px - L * cos, Ty = Py - L * sin;
+
+    /* ground and hatching */
+    stroke(c.line, 1);
+    ctx.beginPath(); ctx.moveTo(18, y0); ctx.lineTo(W - 18, y0); ctx.stroke();
+    ctx.beginPath();
+    for (var x = 26; x < W - 18; x += 12) { ctx.moveTo(x, y0); ctx.lineTo(x - 6, y0 + 6); }
+    ctx.stroke();
+
+    /* incline */
+    stroke(c.ink, 1.25);
+    ctx.beginPath(); ctx.moveTo(Tx, Ty); ctx.lineTo(Px, Py); ctx.stroke();
+    ctx.beginPath(); ctx.arc(Px, Py, 3, 0, Math.PI * 2); ctx.fillStyle = c.bg; ctx.fill(); ctx.stroke();
+
+    /* angle */
+    stroke(c.muted, 1);
+    ctx.beginPath(); ctx.arc(Px, Py, 46, Math.PI, Math.PI + theta); ctx.stroke();
+    text('θ', Px - 60 * Math.cos(theta / 2), Py - 60 * Math.sin(theta / 2), c.muted);
+
+    /* height of the raised end */
+    var hx = Math.round(Tx - 26) + 0.5;
+    stroke(c.line, 1); ctx.beginPath(); ctx.moveTo(Tx - 4, Ty); ctx.lineTo(hx - 3, Ty); ctx.stroke();
+    dim(hx, Ty, hx, y0, (planeM * sin).toFixed(2) + ' m', c.muted);
+
+    /* block */
+    var b = blockM * pxPerM;
+    var ux = cos, uy = sin, nx = sin, ny = -cos;
+    var s = d * pxPerM + b / 2;
+    var Cx = Tx + ux * s + nx * b / 2, Cy = Ty + uy * s + ny * b / 2;
+    ctx.save(); ctx.translate(Cx, Cy); ctx.rotate(theta);
+    ctx.fillStyle = c.fill; stroke(c.ink, 1.25);
+    ctx.beginPath(); ctx.rect(-b / 2, -b / 2, b, b); ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    /* forces, from the centre of mass */
+    var k = 7.2;
+    arrow(Cx, Cy, Cx, Cy + m * g * k, c.ink, 'mg');
+    arrow(Cx, Cy, Cx + nx * cur.N * k, Cy + ny * cur.N * k, c.ink, 'N');
+    arrow(Cx, Cy, Cx - ux * cur.f * k, Cy - uy * cur.f * k, c.ink, 'f');
+    if (cur.v > 0.02) {
+      var ox = Cx + nx * (b / 2 + 12), oy = Cy + ny * (b / 2 + 12);
+      arrow(ox, oy, ox + ux * cur.v * 40, oy + uy * cur.v * 40, c.fg, 'v');
+    }
+  }
+
+  function readout() {
+    if (ro.theta) ro.theta.textContent = (theta * 180 / Math.PI).toFixed(1) + '°';
+    if (ro.n) ro.n.textContent = cur.N.toFixed(2) + ' N';
+    if (ro.f) ro.f.textContent = cur.f.toFixed(2) + ' N';
+    if (ro.a) ro.a.textContent = cur.a.toFixed(2) + ' m/s²';
+    if (ro.state) ro.state.textContent = sliding ? 'Sliding' : 'Holding';
+  }
+
+  function frame(ts) {
+    if (!running) return;
+    if (last === null) last = ts;
+    var dt = (ts - last) / 1000; last = ts;
+    if (dt > 0.05) dt = 0.05;
+    step(dt); draw(); readout();
+    requestAnimationFrame(frame);
+  }
+  function start() { if (running || reduce) return; running = true; last = null; requestAnimationFrame(frame); }
+  function stop() { running = false; }
+
+  resize();
+  readout();
+  try { new ResizeObserver(resize).observe(canvas); } catch (e) { window.addEventListener('resize', resize); }
+  if (!reduce) {
+    try {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) start(); else stop(); });
+      }, { threshold: 0.05 }).observe(canvas);
+    } catch (e) { start(); }
+    document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); else start(); });
+  }
+})();
 </script>
 </body>
 </html>
